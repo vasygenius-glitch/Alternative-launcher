@@ -17,7 +17,20 @@ def get_minecraft_dir():
 
 def install_forge(mc_dir, callback=None):
     if callback:
-        callback("Проверка/Установка Forge...")
+        callback("Проверка Vanilla Minecraft...", 0.05)
+
+    callback_dict_vanilla = {}
+    if callback:
+        callback_dict_vanilla = {
+            "setStatus": lambda text: callback(f"Minecraft: {text}", None),
+            "setProgress": lambda progress: callback(None, 0.05 + (progress / 100) * 0.1),
+            "setMax": lambda max_val: None
+        }
+
+    minecraft_launcher_lib.install.install_minecraft_version(MINECRAFT_VERSION, mc_dir, callback=callback_dict_vanilla)
+
+    if callback:
+        callback("Проверка Forge...", 0.15)
 
     # Find exact forge id, and install if not exist
     forge_id = minecraft_launcher_lib.forge.find_forge_version(FORGE_VERSION)
@@ -29,11 +42,23 @@ def install_forge(mc_dir, callback=None):
     # Simple check if Forge is already installed.
     if forge_id in installed_versions:
         if callback:
-             callback("Forge уже установлен.")
+             callback("Forge уже установлен.", 0.3)
         return forge_id
 
     # Install Forge
-    minecraft_launcher_lib.forge.install_forge_version(FORGE_VERSION, mc_dir)
+    if callback:
+        callback("Установка Forge (это может занять время)...", 0.15)
+
+    # Setup callbacks for minecraft_launcher_lib
+    callback_dict = {}
+    if callback:
+        callback_dict = {
+            "setStatus": lambda text: callback(f"Forge: {text}", None),
+            "setProgress": lambda progress: callback(None, 0.15 + (progress / 100) * 0.35),
+            "setMax": lambda max_val: None
+        }
+
+    minecraft_launcher_lib.forge.install_forge_version(FORGE_VERSION, mc_dir, callback=callback_dict)
 
     # Try finding exact id again after install
     forge_id = minecraft_launcher_lib.forge.find_forge_version(FORGE_VERSION)
@@ -46,7 +71,7 @@ def launch_game(username, is_offline=True, token_dict=None, callback=None):
     mc_dir = get_minecraft_dir()
 
     if callback:
-        callback("Подготовка к запуску...")
+        callback("Подготовка к запуску...", 0.0)
 
     # Install Forge
     forge_version_id = install_forge(mc_dir, callback)
@@ -66,12 +91,12 @@ def launch_game(username, is_offline=True, token_dict=None, callback=None):
         options["username"] = token_dict["name"]
 
     if callback:
-        callback("Генерация команды запуска...")
+        callback("Генерация команды запуска...", 0.95)
 
     minecraft_command = minecraft_launcher_lib.command.get_minecraft_command(forge_version_id, mc_dir, options)
 
     if callback:
-        callback("Запуск игры!")
+        callback("Запуск игры!", 1.0)
 
     subprocess.Popen(minecraft_command)
 
@@ -103,17 +128,19 @@ def download_modrinth_mods(mod_names, mc_dir, callback=None):
 
     loader = "forge"
     version = MINECRAFT_VERSION
+    total_mods = len(mod_names)
 
-    for mod_name in mod_names:
+    for idx, mod_name in enumerate(mod_names):
+        base_progress = 0.5 + (idx / total_mods) * 0.4
         if callback:
-            callback(f"Поиск мода {mod_name}...")
+            callback(f"Поиск мода {mod_name}...", base_progress)
 
         # Get mod info
         search_url = f"https://api.modrinth.com/v2/project/{mod_name}"
         res = requests.get(search_url)
         if res.status_code != 200:
             if callback:
-                callback(f"Мод {mod_name} не найден!")
+                callback(f"Мод {mod_name} не найден!", base_progress)
             continue
 
         # Get versions for this mod
@@ -141,17 +168,17 @@ def download_modrinth_mods(mod_names, mc_dir, callback=None):
         if os.path.exists(filepath):
             if check_file_hash(filepath, expected_hash, 'sha512'):
                 if callback:
-                    callback(f"Мод {mod_name} уже установлен.")
+                    callback(f"Мод {mod_name} уже установлен.", base_progress + 0.1)
                 continue
             else:
                 os.remove(filepath) # Remove corrupted file
 
         if callback:
-            callback(f"Скачивание {mod_name}...")
+            callback(f"Скачивание {mod_name}...", base_progress + 0.05)
 
         if download_file(download_url, filepath):
              if callback:
-                callback(f"Мод {mod_name} успешно скачан.")
+                callback(f"Мод {mod_name} успешно скачан.", base_progress + 0.1)
         else:
             if callback:
-                callback(f"Ошибка при скачивании {mod_name}.")
+                callback(f"Ошибка при скачивании {mod_name}.", base_progress + 0.1)

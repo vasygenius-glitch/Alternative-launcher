@@ -35,37 +35,46 @@ class LauncherApp(ctk.CTk):
             print(f"Error loading background image: {e}")
 
         # Login Frame
-        self.login_frame = ctk.CTkFrame(self, fg_color="gray20", corner_radius=15, bg_color="transparent")
+        # Added semi-transparent black background by styling the frame
+        self.login_frame = ctk.CTkFrame(self, fg_color="#222222", corner_radius=20, border_width=2, border_color="#555555", bg_color="transparent")
         self.login_frame.place(relx=0.5, rely=0.5, anchor=ctk.CENTER)
 
-        self.title_label = ctk.CTkLabel(self.login_frame, text="Cat Server Launcher", font=ctk.CTkFont(size=24, weight="bold"))
-        self.title_label.pack(pady=(20, 10), padx=20)
+        self.title_label = ctk.CTkLabel(self.login_frame, text="Cat Server Launcher", font=ctk.CTkFont(size=28, weight="bold"), text_color="#FFFFFF")
+        self.title_label.pack(pady=(30, 15), padx=40)
 
         # Username
-        self.username_entry = ctk.CTkEntry(self.login_frame, placeholder_text="Никнейм", width=200)
-        self.username_entry.pack(pady=10, padx=20)
-
-        # Access Key
-        self.key_entry = ctk.CTkEntry(self.login_frame, placeholder_text="Ключ доступа", show="*", width=200)
-        self.key_entry.pack(pady=10, padx=20)
+        self.username_entry = ctk.CTkEntry(self.login_frame, placeholder_text="Никнейм", width=280, height=45, font=ctk.CTkFont(size=18), corner_radius=10, fg_color="#333333", border_color="#555555")
+        self.username_entry.pack(pady=(10, 25), padx=40)
 
         # Buttons
-        self.play_button = ctk.CTkButton(self.login_frame, text="Играть", command=self.on_play_click)
-        self.play_button.pack(pady=(10, 5), padx=20)
+        self.play_button = ctk.CTkButton(self.login_frame, text="ИГРАТЬ", command=self.on_play_click, width=280, height=50, font=ctk.CTkFont(size=20, weight="bold"), fg_color="#28a745", hover_color="#218838", corner_radius=10)
+        self.play_button.pack(pady=(10, 30), padx=40)
 
-        # MS Login (Placeholder)
-        self.ms_login_button = ctk.CTkButton(self.login_frame, text="Вход Microsoft", command=self.on_ms_login_click, fg_color="#00a4ef", hover_color="#008ecc")
-        self.ms_login_button.pack(pady=(5, 20), padx=20)
+        # Progress Bar Frame (Hidden initially)
+        self.progress_frame = ctk.CTkFrame(self, fg_color="transparent", bg_color="transparent")
+        self.progress_frame.place(relx=0.5, rely=0.85, anchor=ctk.CENTER)
+
+        self.progress_bar = ctk.CTkProgressBar(self.progress_frame, width=500, height=15, corner_radius=10, progress_color="#28a745")
+        self.progress_bar.set(0)
+        self.progress_bar.pack(pady=(0, 10))
+        self.progress_bar.pack_forget() # Hide initially
 
         # Status Label
-        self.status_label = ctk.CTkLabel(self, text="", text_color="white", bg_color="transparent", font=ctk.CTkFont(size=14, weight="bold"))
-        self.status_label.place(relx=0.5, rely=0.9, anchor=ctk.CENTER)
+        self.status_label = ctk.CTkLabel(self.progress_frame, text="", text_color="white", bg_color="transparent", font=ctk.CTkFont(size=14, weight="bold"))
+        self.status_label.pack()
 
         self.is_launching = False
 
-    def update_status(self, text):
-        self.status_label.configure(text=text)
-        self.update()
+    def thread_safe_update(self, text, progress):
+        if text is not None:
+            self.status_label.configure(text=text)
+        if progress is not None:
+            self.progress_bar.pack(pady=(0, 10)) # Show progress bar
+            self.progress_bar.set(progress)
+
+    def update_status(self, text, progress=None):
+        # Schedule the UI update on the main thread
+        self.after(0, lambda: self.thread_safe_update(text, progress))
 
     def launch_sequence(self, username, is_offline):
         try:
@@ -92,18 +101,9 @@ class LauncherApp(ctk.CTk):
             return
 
         username = self.username_entry.get().strip()
-        key = self.key_entry.get().strip()
 
         if not username:
             self.update_status("Введите никнейм!")
-            return
-
-        if not key:
-            self.update_status("Введите ключ доступа!")
-            return
-
-        if key != config.SERVER_KEY:
-            self.update_status("Неверный ключ доступа!")
             return
 
         self.is_launching = True
