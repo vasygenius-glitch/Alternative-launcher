@@ -67,7 +67,32 @@ def install_forge(mc_dir, callback=None):
 
     return forge_id
 
-def launch_game(username, is_offline=True, token_dict=None, callback=None):
+def get_aikar_flags():
+    return [
+        "-XX:+UseG1GC",
+        "-XX:+ParallelRefProcEnabled",
+        "-XX:MaxGCPauseMillis=200",
+        "-XX:+UnlockExperimentalVMOptions",
+        "-XX:+DisableExplicitGC",
+        "-XX:+AlwaysPreTouch",
+        "-XX:G1NewSizePercent=30",
+        "-XX:G1MaxNewSizePercent=40",
+        "-XX:G1HeapRegionSize=8M",
+        "-XX:G1ReservePercent=20",
+        "-XX:G1HeapWastePercent=5",
+        "-XX:G1MixedGCCountTarget=4",
+        "-XX:InitiatingHeapOccupancyPercent=15",
+        "-XX:G1MixedGCLiveThresholdPercent=90",
+        "-XX:G1RSetUpdatingPauseTimePercent=5",
+        "-XX:SurvivorRatio=32",
+        "-XX:+PerfDisableSharedMem",
+        "-XX:MaxTenuringThreshold=1",
+        "-Dusing.aikars.flags=https://mcflags.emc.gs",
+        "-Daikars.new.flags=true"
+    ]
+
+def launch_game(username, is_offline=True, token_dict=None, callback=None, ram_min=2048, ram_max=4096, java_path=""):
+    from logger import log
     mc_dir = get_minecraft_dir()
 
     if callback:
@@ -77,11 +102,18 @@ def launch_game(username, is_offline=True, token_dict=None, callback=None):
     forge_version_id = install_forge(mc_dir, callback)
 
     # Launch Options
+    jvm_arguments = get_aikar_flags()
+    jvm_arguments.append(f"-Xms{ram_min}M")
+    jvm_arguments.append(f"-Xmx{ram_max}M")
+
     options = {
         "username": username,
         "uuid": "",
-        "token": ""
+        "token": "",
+        "jvmArguments": jvm_arguments
     }
+    if java_path:
+        options["executablePath"] = java_path
 
     if is_offline:
         options["uuid"] = "00000000-0000-0000-0000-000000000000"
@@ -98,10 +130,12 @@ def launch_game(username, is_offline=True, token_dict=None, callback=None):
     if callback:
         callback("Запуск игры!", 1.0)
 
+    log.info(f"Launching Minecraft with options: RAM {ram_min}-{ram_max}MB, Java: {java_path or 'auto'}")
     subprocess.Popen(minecraft_command)
 
 import requests
 import hashlib
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def download_file(url, path):
     response = requests.get(url, stream=True)
@@ -122,7 +156,54 @@ def check_file_hash(path, expected_hash, hash_algo='sha512'):
             hash_obj.update(chunk)
     return hash_obj.hexdigest() == expected_hash
 
+def _process_single_mod(mod_name, mods_dir, loader, version):
+    from logger import log
+
+    # Get mod info
+    search_url = f"https://api.modrinth.com/v2/project/{mod_name}"
+    res = requests.get(search_url)
+    if res.status_code != 200:
+        return mod_name, False, "не найден"
+
+    # Get versions for this mod
+    versions_url = f"https://api.modrinth.com/v2/project/{mod_name}/version"
+    params = {
+        "loaders": f'["{loader}"]',
+        "game_versions": f'["{version}"]'
+    }
+    res_versions = requests.get(versions_url, params=params)
+
+    if res_versions.status_code != 200 or not res_versions.json():
+        return mod_name, False, "версия не найдена"
+
+    latest_version = res_versions.json()[0]
+    file_info = latest_version['files'][0]
+    download_url = file_info['url']
+    filename = file_info['filename']
+    expected_hash = file_info['hashes']['sha512']
+
+    filepath = os.path.join(mods_dir, filename)
+
+    # Check if already downloaded and valid
+    if os.path.exists(filepath):
+        if check_file_hash(filepath, expected_hash, 'sha512'):
+            return mod_name, True, "уже установлен"
+        else:
+            log.warning(f"Mod {mod_name} corrupted. Redownloading...")
+            os.remove(filepath) # Remove corrupted file
+
+    if download_file(download_url, filepath):
+        # Verify hash after download
+        if check_file_hash(filepath, expected_hash, 'sha512'):
+            return mod_name, True, "скачан успешно"
+        else:
+            os.remove(filepath)
+            return mod_name, False, "ошибка проверки хэша"
+    else:
+        return mod_name, False, "ошибка скачивания"
+
 def download_modrinth_mods(mod_names, mc_dir, callback=None):
+    from logger import log
     mods_dir = os.path.join(mc_dir, "mods")
     os.makedirs(mods_dir, exist_ok=True)
 
@@ -130,55 +211,26 @@ def download_modrinth_mods(mod_names, mc_dir, callback=None):
     version = MINECRAFT_VERSION
     total_mods = len(mod_names)
 
-    for idx, mod_name in enumerate(mod_names):
-        base_progress = 0.5 + (idx / total_mods) * 0.4
-        if callback:
-            callback(f"Поиск мода {mod_name}...", base_progress)
+    if total_mods == 0:
+        return
 
-        # Get mod info
-        search_url = f"https://api.modrinth.com/v2/project/{mod_name}"
-        res = requests.get(search_url)
-        if res.status_code != 200:
-            if callback:
-                callback(f"Мод {mod_name} не найден!", base_progress)
-            continue
+    if callback:
+        callback("Синхронизация модов...", 0.5)
 
-        # Get versions for this mod
-        versions_url = f"https://api.modrinth.com/v2/project/{mod_name}/version"
-        params = {
-            "loaders": f'["{loader}"]',
-            "game_versions": f'["{version}"]'
-        }
-        res_versions = requests.get(versions_url, params=params)
-
-        if res_versions.status_code != 200 or not res_versions.json():
-            if callback:
-                callback(f"Версия {mod_name} для {loader} {version} не найдена!")
-            continue
-
-        latest_version = res_versions.json()[0]
-        file_info = latest_version['files'][0]
-        download_url = file_info['url']
-        filename = file_info['filename']
-        expected_hash = file_info['hashes']['sha512']
-
-        filepath = os.path.join(mods_dir, filename)
-
-        # Check if already downloaded and valid
-        if os.path.exists(filepath):
-            if check_file_hash(filepath, expected_hash, 'sha512'):
+    completed_mods = 0
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_mod = {executor.submit(_process_single_mod, mod_name, mods_dir, loader, version): mod_name for mod_name in mod_names}
+        for future in as_completed(future_to_mod):
+            mod_name = future_to_mod[future]
+            try:
+                name, success, msg = future.result()
+                completed_mods += 1
+                progress = 0.5 + (completed_mods / total_mods) * 0.4
                 if callback:
-                    callback(f"Мод {mod_name} уже установлен.", base_progress + 0.1)
-                continue
-            else:
-                os.remove(filepath) # Remove corrupted file
-
-        if callback:
-            callback(f"Скачивание {mod_name}...", base_progress + 0.05)
-
-        if download_file(download_url, filepath):
-             if callback:
-                callback(f"Мод {mod_name} успешно скачан.", base_progress + 0.1)
-        else:
-            if callback:
-                callback(f"Ошибка при скачивании {mod_name}.", base_progress + 0.1)
+                    callback(f"Мод {name}: {msg}", progress)
+                if not success:
+                    log.error(f"Failed to process mod {name}: {msg}")
+                else:
+                    log.debug(f"Successfully processed mod {name}: {msg}")
+            except Exception as exc:
+                log.error(f"Mod {mod_name} generated an exception: {exc}")
