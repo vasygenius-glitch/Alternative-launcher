@@ -1,0 +1,4 @@
+[2026-05-07 22:33:02] [MainThread/INFO] [CatLauncherV2.Global]: test
+[2026-05-07 22:46:59] [MainThread/DEBUG] [CatLauncherV2.Config]: Configuration saved.
+[2026-05-07 22:47:36] [MainThread/INFO] [CatLauncherV2.AuthManager]: Added offline account: TestUser
+[2026-05-07 22:49:05] [MainThread/INFO] [CatLauncherV2.InstanceMgr]: Created instance: Test (1.20.1 - vanilla)

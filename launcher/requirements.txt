@@ -3,3 +3,4 @@ Pillow
 minecraft-launcher-lib
 requests
 pyinstaller
+pypresence

@@ -1,0 +1,11 @@
+{
+    "accounts": {
+        "b9448e6a-4f75-4290-bf11-1729f2766bf4": {
+            "type": "offline",
+            "username": "TestUser",
+            "uuid": "097d3392-865a-3f3c-8b4a-da1c3473466c",
+            "access_token": "null"
+        }
+    },
+    "active_account_id": "b9448e6a-4f75-4290-bf11-1729f2766bf4"
+}

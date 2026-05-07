@@ -1,0 +1,17 @@
+{
+    "launcher": {
+        "theme": "dark",
+        "color": "blue",
+        "close_on_launch": true,
+        "discord_rpc": true,
+        "language": "ru"
+    },
+    "java": {
+        "ram_min": 2048,
+        "ram_max": 4096,
+        "java_path": "",
+        "custom_args": ""
+    },
+    "last_instance": "default",
+    "active_account": null
+}
