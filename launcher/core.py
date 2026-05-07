@@ -1,4 +1,5 @@
 import os
+import sys
 import minecraft_launcher_lib
 import subprocess
 import platform
@@ -8,14 +9,28 @@ FORGE_VERSION = "1.20.1-47.3.0" # A stable forge version for 1.20.1
 CLIENT_ID = "YOUR_CLIENT_ID" # Placeholder for MS Login
 
 def get_minecraft_dir():
-    if platform.system() == "Windows":
-        return os.path.join(os.environ["APPDATA"], ".minecraft")
-    elif platform.system() == "Darwin":
-        return os.path.join(os.path.expanduser("~"), "Library", "Application Support", "minecraft")
+    if getattr(sys, 'frozen', False):
+        base_path = os.path.dirname(sys.executable)
     else:
-        return os.path.join(os.path.expanduser("~"), ".minecraft")
+        base_path = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_path, ".minecraft")
 
 def install_forge(mc_dir, callback=None):
+    # Quick check if exact Forge is already installed to save time
+    # Modern forge IDs are like "1.20.1-forge-47.3.0"
+    forge_version_short = FORGE_VERSION.replace(f"{MINECRAFT_VERSION}-", "")
+    expected_forge_id = f"{MINECRAFT_VERSION}-forge-{forge_version_short}"
+    installed_versions = [v['id'] for v in minecraft_launcher_lib.utils.get_installed_versions(mc_dir)]
+
+    forge_id = minecraft_launcher_lib.forge.find_forge_version(MINECRAFT_VERSION)
+    if not forge_id:
+        forge_id = expected_forge_id
+
+    if forge_id in installed_versions or expected_forge_id in installed_versions:
+        if callback:
+             callback("Forge уже установлен.", 0.3)
+        return expected_forge_id if expected_forge_id in installed_versions else forge_id
+
     if callback:
         callback("Проверка Vanilla Minecraft...", 0.05)
 
@@ -31,19 +46,6 @@ def install_forge(mc_dir, callback=None):
 
     if callback:
         callback("Проверка Forge...", 0.15)
-
-    # Find exact forge id, and install if not exist
-    forge_id = minecraft_launcher_lib.forge.find_forge_version(FORGE_VERSION)
-    if not forge_id:
-        forge_id = f"{MINECRAFT_VERSION}-forge-{FORGE_VERSION}" # Fallback
-
-    installed_versions = [v['id'] for v in minecraft_launcher_lib.utils.get_installed_versions(mc_dir)]
-
-    # Simple check if Forge is already installed.
-    if forge_id in installed_versions:
-        if callback:
-             callback("Forge уже установлен.", 0.3)
-        return forge_id
 
     # Install Forge
     if callback:
@@ -61,9 +63,10 @@ def install_forge(mc_dir, callback=None):
     minecraft_launcher_lib.forge.install_forge_version(FORGE_VERSION, mc_dir, callback=callback_dict)
 
     # Try finding exact id again after install
-    forge_id = minecraft_launcher_lib.forge.find_forge_version(FORGE_VERSION)
+    forge_id = minecraft_launcher_lib.forge.find_forge_version(MINECRAFT_VERSION)
     if not forge_id:
-        forge_id = f"{MINECRAFT_VERSION}-forge-{FORGE_VERSION}" # Fallback
+        forge_version_short = FORGE_VERSION.replace(f"{MINECRAFT_VERSION}-", "")
+        forge_id = f"{MINECRAFT_VERSION}-forge-{forge_version_short}" # Fallback
 
     return forge_id
 
@@ -218,7 +221,7 @@ def download_modrinth_mods(mod_names, mc_dir, callback=None):
         callback("Синхронизация модов...", 0.5)
 
     completed_mods = 0
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=20) as executor:
         future_to_mod = {executor.submit(_process_single_mod, mod_name, mods_dir, loader, version): mod_name for mod_name in mod_names}
         for future in as_completed(future_to_mod):
             mod_name = future_to_mod[future]
