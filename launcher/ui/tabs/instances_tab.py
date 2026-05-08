@@ -1,5 +1,6 @@
 import customtkinter as ctk
-from launcher.ui.components.widgets import Card, Dialog
+from launcher.ui.components.widgets import Card
+from launcher.ui.components.dialogs import Dialog
 
 class InstancesTab(ctk.CTkFrame):
     def __init__(self, master, app_logic):

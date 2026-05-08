@@ -9,7 +9,7 @@ if exist "build" rmdir /s /q "build"
 
 :: Run PyInstaller with proper CustomTkinter hook and hidden imports
 pyinstaller --noconfirm ^
-    --onedir ^
+    --onefile ^
     --windowed ^
     --name "CatLauncherV2" ^
     --hidden-import "customtkinter" ^

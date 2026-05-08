@@ -30,6 +30,21 @@ class SettingsTab(ctk.CTkFrame):
         self.java_path.insert(0, self.config.get("java", "java_path", ""))
         self.java_path.pack(fill="x", pady=5)
 
+        # GC Selection
+        ctk.CTkLabel(self.java_card.content, text="Сборщик мусора (Garbage Collector)").pack(anchor="w", pady=(10,0))
+        self.gc_var = ctk.StringVar(value=self.config.get("java", "gc_type", "G1GC"))
+        self.gc_menu = ctk.CTkOptionMenu(
+            self.java_card.content,
+            variable=self.gc_var,
+            values=["G1GC", "ZGC", "ShenandoahGC"],
+            command=self.update_gc_desc
+        )
+        self.gc_menu.pack(fill="x", pady=5)
+
+        self.gc_desc = ctk.CTkLabel(self.java_card.content, text="", font=ctk.CTkFont(size=11, slant="italic"), text_color="gray", wraplength=400, justify="left")
+        self.gc_desc.pack(fill="x", pady=(0, 10))
+        self.update_gc_desc(self.gc_var.get())
+
         # Launcher Settings
         self.launcher_card = ModernCard(self, "Настройки лаунчера", icon="⚙️")
         self.launcher_card.grid(row=0, column=1, sticky="nsew", pady=(0, 20))
@@ -44,6 +59,14 @@ class SettingsTab(ctk.CTkFrame):
         ctk.CTkButton(self.java_card.content, text="Автонастройка ОЗУ", command=self.auto_configure_ram, fg_color="#17a2b8", hover_color="#138496").pack(fill="x", pady=15)
 
         GlassButton(self, text="Сохранить настройки", command=self.save_settings, height=40).grid(row=1, column=0, columnspan=2, pady=10)
+
+    def update_gc_desc(self, choice):
+        descs = {
+            "G1GC": "Сбалансированный вариант по умолчанию. Отлично подходит для большинства сборок.",
+            "ZGC": "Обеспечивает минимальные задержки (фризы). Рекомендуется для мощных ПК и Java 17+.",
+            "ShenandoahGC": "Идеально подходит для огромных сборок (200+ модов) и серверов. Требует Java 11+."
+        }
+        self.gc_desc.configure(text=descs.get(choice, ""))
 
     def auto_configure_ram(self):
         from launcher.core.system_info import SystemInfo
@@ -63,6 +86,7 @@ class SettingsTab(ctk.CTkFrame):
         except ValueError:
             pass
         self.config.set("java", "java_path", self.java_path.get())
+        self.config.set("java", "gc_type", self.gc_var.get())
         self.config.set("launcher", "close_on_launch", self.close_var.get())
         self.config.set("launcher", "discord_rpc", self.rpc_var.get())
 

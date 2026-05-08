@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import threading
-from launcher.ui.components.widgets import Card, Dialog
+from launcher.ui.components.widgets import Card
+from launcher.ui.components.dialogs import Dialog
 from launcher.core.mod_manager import ModManager
 
 class ModsTab(ctk.CTkFrame):
@@ -88,8 +89,10 @@ class ModsTab(ctk.CTkFrame):
         Dialog("Установка", "Установка началась (см. консоль/логи)", self)
 
         def _inst():
+            from launcher.utils.logger import get_logger
+            log = get_logger("ModsTab")
             success = self.mm.install_mod(project_id, self.current_loader, self.current_mc_version)
             if success:
-                print(f"Mod {project_id} installed successfully.")
+                log.info(f"Mod {project_id} installed successfully.")
 
         threading.Thread(target=_inst, daemon=True).start()

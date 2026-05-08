@@ -96,3 +96,28 @@
 [2026-05-08 12:58:06] [MainThread/DEBUG] [CatLauncherV2.DiscordRPC]: Could not connect to Discord RPC (is Discord running?): Could not find Discord installed and running on this machine.
 [2026-05-08 12:58:06] [MainThread/INFO] [CatLauncherV2.App]: UI Started.
 [2026-05-08 12:58:06] [MainThread/INFO] [CatLauncherV2.App]: PyInstaller splash screen closed.
+[2026-05-08 15:35:59] [MainThread/INFO] [CatLauncherV2.CrashAnalyzer]: Crash Analyzer found issue: Нехватка оперативной памяти (ОЗУ)
+[2026-05-08 15:44:47] [MainThread/INFO] [CatLauncherV2.App]: Initializing CatLauncherV2...
+[2026-05-08 15:44:47] [MainThread/INFO] [CatLauncherV2.Config]: Configuration loaded successfully.
+[2026-05-08 15:44:47] [MainThread/DEBUG] [CatLauncherV2.DiscordRPC]: Could not connect to Discord RPC (is Discord running?): Could not find Discord installed and running on this machine.
+[2026-05-08 15:44:48] [MainThread/INFO] [CatLauncherV2.App]: UI Started.
+[2026-05-08 16:03:38] [MainThread/INFO] [CatLauncherV2.Integrity]: Verifying launcher environment integrity...
+[2026-05-08 16:03:38] [MainThread/INFO] [CatLauncherV2.Integrity]: Self-healed missing directory: /app/launcher_data/game
+[2026-05-08 16:03:38] [MainThread/INFO] [CatLauncherV2.Integrity]: Environment integrity check passed.
+[2026-05-08 16:03:38] [MainThread/INFO] [CatLauncherV2.App]: Initializing CatLauncherV2...
+[2026-05-08 16:03:38] [MainThread/INFO] [CatLauncherV2.Config]: Configuration loaded successfully.
+[2026-05-08 16:03:38] [MainThread/DEBUG] [CatLauncherV2.DiscordRPC]: Could not connect to Discord RPC (is Discord running?): Could not find Discord installed and running on this machine.
+[2026-05-08 16:03:39] [MainThread/INFO] [CatLauncherV2.App]: UI Started.
+[2026-05-08 16:10:23] [MainThread/INFO] [CatLauncherV2.Integrity]: Verifying launcher environment integrity...
+[2026-05-08 16:10:23] [MainThread/INFO] [CatLauncherV2.Integrity]: Environment integrity check passed.
+[2026-05-08 16:10:23] [MainThread/INFO] [CatLauncherV2.App]: Initializing CatLauncherV2...
+[2026-05-08 16:10:23] [MainThread/INFO] [CatLauncherV2.Config]: Configuration loaded successfully.
+[2026-05-08 16:10:23] [MainThread/DEBUG] [CatLauncherV2.DiscordRPC]: Could not connect to Discord RPC (is Discord running?): Could not find Discord installed and running on this machine.
+[2026-05-08 16:10:24] [MainThread/INFO] [CatLauncherV2.App]: UI Started.
+[2026-05-08 16:15:48] [MainThread/INFO] [CatLauncherV2.Integrity]: Verifying launcher environment integrity...
+[2026-05-08 16:15:48] [MainThread/INFO] [CatLauncherV2.Integrity]: Environment integrity check passed.
+[2026-05-08 16:15:48] [MainThread/INFO] [CatLauncherV2.App]: Initializing CatLauncherV2...
+[2026-05-08 16:15:48] [MainThread/INFO] [CatLauncherV2.Config]: Configuration loaded successfully.
+[2026-05-08 16:15:48] [MainThread/DEBUG] [CatLauncherV2.DiscordRPC]: Could not connect to Discord RPC (is Discord running?): Could not find Discord installed and running on this machine.
+[2026-05-08 16:15:49] [MainThread/INFO] [CatLauncherV2.App]: UI Started.
+[2026-05-08 16:15:49] [MainThread/INFO] [CatLauncherV2.App]: PyInstaller splash screen closed.

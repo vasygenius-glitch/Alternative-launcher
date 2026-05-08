@@ -19,3 +19,17 @@ def get_launcher_mc_dir():
     Isolated directory for instances but can symlink/fallback to default.
     """
     return os.path.abspath("launcher_data/game")
+
+def get_resource_path(relative_path):
+    """
+    Get the absolute path to a resource, handling PyInstaller's _MEIPASS.
+    Essential for single-file executables (--onefile).
+    """
+    import sys
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)

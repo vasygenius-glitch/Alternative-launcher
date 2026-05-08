@@ -14,7 +14,7 @@ def build():
     os.environ['PYTHONPATH'] = os.getcwd()
 
     cmd = [
-        "pyinstaller", "--noconfirm", "--onedir", "--windowed",
+        "pyinstaller", "--noconfirm", "--onefile", "--windowed",
         "--paths", os.getcwd(),
         "--name", "CatLauncherV2",
         "--hidden-import", "customtkinter",

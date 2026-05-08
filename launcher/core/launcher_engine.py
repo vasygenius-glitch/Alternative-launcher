@@ -117,9 +117,12 @@ class LauncherEngine:
         from launcher.core.system_info import SystemInfo
         java_path = self.config.get("java", "java_path", "")
         custom_args_str = self.config.get("java", "custom_args", "")
+        gc_type = self.config.get("java", "gc_type", "G1GC")
+        ram_min = self.config.get("java", "ram_min", None)
+        ram_max = self.config.get("java", "ram_max", None)
 
         # Use optimal dynamic flags calculated by SystemInfo, which inherently considers the RAM
-        jvm_args = SystemInfo.get_jvm_args()
+        jvm_args = SystemInfo.get_jvm_args(gc_type=gc_type, custom_ram_min=ram_min, custom_ram_max=ram_max)
 
         # Override RAM if user explicitly set custom flags, though otherwise SystemInfo handled it
         if custom_args_str:
@@ -139,4 +142,5 @@ class LauncherEngine:
         command = minecraft_launcher_lib.command.get_minecraft_command(version_id, mc_dir, options)
 
         log.info("Launching JVM...")
-        subprocess.Popen(command, cwd=mc_dir)
+        # Return the Popen object so the app can monitor it
+        return subprocess.Popen(command, cwd=mc_dir)

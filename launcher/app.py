@@ -1,6 +1,7 @@
 import sys
 import os
 import time
+import threading
 
 from launcher.utils.logger import get_logger
 from launcher.utils.config import ConfigManager
@@ -25,6 +26,9 @@ class CatLauncherApp:
     Main controller tying core logic to UI.
     """
     def __init__(self):
+        from launcher.core.launcher_integrity import LauncherIntegrity
+        LauncherIntegrity.verify_environment()
+
         log.info("Initializing CatLauncherV2...")
         self.config = ConfigManager()
         self.auth = AuthManager()
@@ -104,7 +108,9 @@ class CatLauncherApp:
             ver_id = self.engine.install_and_get_version(instance_id, progress_cb)
 
             progress_cb(95, "Генерация параметров запуска...")
-            self.engine.build_command_and_launch(instance_id, account, ver_id)
+
+            # Start game process
+            process = self.engine.build_command_and_launch(instance_id, account, ver_id)
 
             progress_cb(100, "Игра запущена!")
             self.rpc.update("Играет в Minecraft", f"Сборка: {instance['name']}", start_time=int(time.time()))
@@ -113,8 +119,33 @@ class CatLauncherApp:
                 log.info("Closing launcher as requested.")
                 # Give UI time to update then exit
                 self.ui.after(2000, self.ui.destroy)
+            else:
+                # If we keep launcher open, monitor the process for crashes
+                def monitor_process():
+                    process.wait()
+                    log.info(f"Minecraft process exited with code {process.returncode}")
+                    if process.returncode != 0:
+                        from launcher.core.crash_analyzer import CrashAnalyzer
+                        analysis = CrashAnalyzer.analyze_crash(self.im.get_instance_dir(instance_id))
+                        if analysis:
+                            # Show crash dialog via UI thread
+                            self.ui.after(0, lambda: self._show_crash_dialog(analysis))
+                        else:
+                            self.ui.after(0, lambda: self._show_crash_dialog({
+                                "title": "Неизвестная ошибка",
+                                "solution": f"Игра завершилась с кодом {process.returncode}."
+                            }))
+
+                    self.rpc.update("В меню", "Выбирает сервер")
+
+                threading.Thread(target=monitor_process, daemon=True).start()
 
         except Exception as e:
             log.error(f"Launch failed: {e}", exc_info=True)
             progress_cb(100, f"Ошибка запуска: {e}")
             self.rpc.update("Ошибка запуска", instance['name'])
+
+    def _show_crash_dialog(self, analysis):
+        from launcher.ui.components.dialogs import Dialog
+        msg = f"{analysis['title']}\n\n{analysis['solution']}"
+        Dialog("Анализ вылета", msg, self.ui)

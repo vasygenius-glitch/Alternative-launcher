@@ -155,48 +155,70 @@ class SystemInfo:
         log.info(f"Auto-configured RAM: {ram_min}-{ram_max}MB and Java: {javas[0] if javas else 'auto'}")
 
     @staticmethod
-    def get_jvm_args():
+    def get_jvm_args(gc_type="G1GC", custom_ram_min=None, custom_ram_max=None):
         """
-        Generates optimal JVM flags based on total RAM.
+        Generates optimal JVM flags based on total RAM and selected GC.
         Warns if RAM is critically low (< 8GB).
         """
         total_ram = SystemInfo.get_total_ram_mb()
 
-        if total_ram < 8192:
-            log.warning(f"Low system RAM detected ({total_ram}MB). Performance may be degraded. Recommend 8GB+ for modded Minecraft.")
-            ram_min = 1024
-            ram_max = min(total_ram - 2048, 4096) # Reserve at least 2GB for OS, max out at 4GB
-            if ram_max < 1024: ram_max = 1024
-        elif total_ram <= 16384:
-            ram_min = 2048
-            ram_max = 6144 # 6GB is a good sweet spot for modern packs
+        # Calculate optimal if not explicitly provided
+        if not custom_ram_min or not custom_ram_max:
+            if total_ram < 8192:
+                log.warning(f"Low system RAM detected ({total_ram}MB). Performance may be degraded. Recommend 8GB+ for modded Minecraft.")
+                ram_min = 1024
+                ram_max = min(total_ram - 2048, 4096)
+                if ram_max < 1024: ram_max = 1024
+            elif total_ram <= 16384:
+                ram_min = 2048
+                ram_max = 6144
+            else:
+                ram_min = 4096
+                ram_max = 8192
         else:
-            ram_min = 4096
-            ram_max = 8192 # Don't go too crazy, GC pauses get bad above 8GB unless specifically tuned
+            ram_min = custom_ram_min
+            ram_max = custom_ram_max
 
-        # Aikar's flags optimized for G1GC (industrial standard for MC)
-        flags = [
-            f"-Xms{ram_min}M",
-            f"-Xmx{ram_max}M",
-            "-XX:+UseG1GC",
-            "-XX:+ParallelRefProcEnabled",
-            "-XX:MaxGCPauseMillis=200",
-            "-XX:+UnlockExperimentalVMOptions",
-            "-XX:+DisableExplicitGC",
-            "-XX:+AlwaysPreTouch",
-            "-XX:G1NewSizePercent=30",
-            "-XX:G1MaxNewSizePercent=40",
-            "-XX:G1HeapRegionSize=8M",
-            "-XX:G1ReservePercent=20",
-            "-XX:G1HeapWastePercent=5",
-            "-XX:G1MixedGCCountTarget=4",
-            "-XX:InitiatingHeapOccupancyPercent=15",
-            "-XX:G1MixedGCLiveThresholdPercent=90",
-            "-XX:G1RSetUpdatingPauseTimePercent=5",
-            "-XX:SurvivorRatio=32",
-            "-XX:+PerfDisableSharedMem",
-            "-XX:MaxTenuringThreshold=1"
-        ]
+        flags = [f"-Xms{ram_min}M", f"-Xmx{ram_max}M"]
 
-        log.info(f"Generated optimal JVM args (RAM: {ram_max}MB allocated).")
+        if gc_type == "ZGC":
+            # High-end, zero-latency GC for modern Java (17+)
+            flags.extend([
+                "-XX:+UseZGC",
+                "-XX:+ZProactive",
+                "-XX:+ZUncommit",
+                "-XX:+UnlockExperimentalVMOptions"
+            ])
+        elif gc_type == "ShenandoahGC":
+            # Great for massive servers and huge packs (Java 11+)
+            flags.extend([
+                "-XX:+UseShenandoahGC",
+                "-XX:+UnlockExperimentalVMOptions",
+                "-XX:ShenandoahGCHeuristics=compact",
+                "-XX:+AlwaysPreTouch"
+            ])
+        else:
+            # Aikar's flags optimized for G1GC (industrial standard for MC, robust fallback)
+            flags.extend([
+                "-XX:+UseG1GC",
+                "-XX:+ParallelRefProcEnabled",
+                "-XX:MaxGCPauseMillis=200",
+                "-XX:+UnlockExperimentalVMOptions",
+                "-XX:+DisableExplicitGC",
+                "-XX:+AlwaysPreTouch",
+                "-XX:G1NewSizePercent=30",
+                "-XX:G1MaxNewSizePercent=40",
+                "-XX:G1HeapRegionSize=8M",
+                "-XX:G1ReservePercent=20",
+                "-XX:G1HeapWastePercent=5",
+                "-XX:G1MixedGCCountTarget=4",
+                "-XX:InitiatingHeapOccupancyPercent=15",
+                "-XX:G1MixedGCLiveThresholdPercent=90",
+                "-XX:G1RSetUpdatingPauseTimePercent=5",
+                "-XX:SurvivorRatio=32",
+                "-XX:+PerfDisableSharedMem",
+                "-XX:MaxTenuringThreshold=1"
+            ])
+
+        log.info(f"Generated optimal JVM args using {gc_type} (RAM: {ram_max}MB).")
         return flags
