@@ -61,9 +61,9 @@ class AccountsTab(ctk.CTkFrame):
             name_lbl.pack(side="left", padx=10, pady=10)
 
             if acc_id != active_id:
-                ctk.CTkButton(f, text="Выбрать", width=60, command=lambda i=acc_id: self.select_account(i)).pack(side="right", padx=5, pady=5)
+                ctk.CTkButton(f, text="ВЫБРАТЬ", width=60, command=lambda i=acc_id: self.select_account(i)).pack(side="right", padx=5, pady=5)
             else:
-                ctk.CTkLabel(f, text="✔ Активен", text_color="#28a745").pack(side="right", padx=10)
+                ctk.CTkLabel(f, text="[X] АКТИВЕН", text_color="#FFFFFF").pack(side="right", padx=10)
 
             ctk.CTkButton(f, text="Удалить", width=60, fg_color="#dc3545", hover_color="#c82333", command=lambda i=acc_id: self.delete_account(i)).pack(side="right", padx=5, pady=5)
 

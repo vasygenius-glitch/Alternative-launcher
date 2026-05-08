@@ -305,6 +305,16 @@ class CrashAnalyzer:
             "regex": re.compile(r"java\.lang\.ClassCastException: (.*) cannot be cast to (.*)"),
             "title": "Неверный тип объекта (ClassCastException)",
             "solution": "Мод пытался преобразовать объект типа {group} в несовместимый тип. Баг разработчика мода."
+        },
+        {
+            "regex": re.compile(r"java\.lang\.UnsupportedClassVersionError: (.*) has been compiled by a more recent version of the Java Runtime \(class file version (\d+\.\d+)\), this version of the Java Runtime only recognizes class file versions up to (\d+\.\d+)"),
+            "title": "Критическая несовместимость Java",
+            "solution": "Этот мод или версия Minecraft ({group}) скомпилирована для более новой Java, но вы пытаетесь использовать старую (например, запускаете 1.20.1 на Java 8). Установите Java 17+ в настройках."
+        },
+        {
+            "regex": re.compile(r"net\.minecraftforge\.fml\.loading\.moddiscovery\.ModFileParser\$ModFileParserException: (.*)"),
+            "title": "NullPointerException (Forge)",
+            "solution": "Forge столкнулся с NPE во время парсинга файла мода: {group}. Файл поврежден (скорее всего, не докачался) или мод несовместим с вашей версией Forge. Перекачайте мод."
         }
     ]
 

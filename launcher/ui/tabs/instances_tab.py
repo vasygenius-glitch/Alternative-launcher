@@ -75,9 +75,9 @@ class InstancesTab(ctk.CTkFrame):
             lbl.pack(side="left", padx=10, pady=10)
 
             if iid != active_id:
-                ctk.CTkButton(f, text="Выбрать", width=60, command=lambda i=iid: self.select_instance(i)).pack(side="right", padx=5, pady=5)
+                ctk.CTkButton(f, text="ВЫБРАТЬ", width=60, command=lambda i=iid: self.select_instance(i)).pack(side="right", padx=5, pady=5)
             else:
-                ctk.CTkLabel(f, text="✔ Текущая", text_color="#28a745").pack(side="right", padx=10)
+                ctk.CTkLabel(f, text="[X] ТЕКУЩАЯ", text_color="#FFFFFF").pack(side="right", padx=10)
 
             ctk.CTkButton(f, text="Удалить", width=60, fg_color="#dc3545", hover_color="#c82333", command=lambda i=iid: self.delete_instance(i)).pack(side="right", padx=5, pady=5)
 

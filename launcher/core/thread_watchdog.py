@@ -57,12 +57,44 @@ class ThreadWatchdog:
             for task_id in dead_tasks:
                 self._handle_dead_task(task_id)
 
+    def register_process(self, task_id, pid, timeout_seconds=60):
+        """Registers a system process (PID) to be monitored. Requires psutil."""
+        with self._lock:
+            self.monitored_threads[task_id] = {
+                "type": "process",
+                "pid": pid,
+                "last_heartbeat": time.time(),
+                "timeout": timeout_seconds,
+                "status": "running"
+            }
+        log.debug(f"Process '{task_id}' (PID: {pid}) registered in Watchdog.")
+
     def _handle_dead_task(self, task_id):
-        # We can't safely "kill" a python thread natively without ctypes magic that corrupts state.
-        # Instead, we decouple the UI from it and let it rot in the background while restarting the logical flow.
-        if "news_fetch" in task_id:
-            log.warning(f"Recovery triggered for {task_id}: Re-initializing connection pools.")
-            # Recovery logic could be hooked here via callbacks
+        data = self.monitored_threads.get(task_id)
+        if not data: return
+
+        if data.get("type") == "process":
+            # True Psutil Hard Kill
+            try:
+                import psutil
+                pid = data["pid"]
+                proc = psutil.Process(pid)
+                # Recursively kill children to ensure no zombie java.exe
+                for child in proc.children(recursive=True):
+                    child.kill()
+                proc.kill()
+                log.error(f"WATCHDOG KILLED FROZEN PROCESS: {task_id} (PID {pid})")
+
+                # Signal the crash analyzer logic (will be caught by monitor process in app.py)
+            except psutil.NoSuchProcess:
+                pass
+            except Exception as e:
+                log.error(f"Watchdog failed to kill process {pid}: {e}")
+        else:
+            # We can't safely "kill" a python thread natively without ctypes magic that corrupts state.
+            # Instead, we decouple the UI from it and let it rot in the background while restarting the logical flow.
+            if "news_fetch" in task_id:
+                log.warning(f"Recovery triggered for {task_id}: Re-initializing connection pools.")
 
     def shutdown(self):
         self._running = False

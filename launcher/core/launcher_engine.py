@@ -76,11 +76,22 @@ class LauncherEngine:
             except Exception as e:
                 log.debug(f"Could not symlink assets: {e}")
 
+        # Pre-flight Java check for modern versions
+        if mc_version.startswith("1.17") or mc_version.startswith("1.18") or mc_version.startswith("1.19") or mc_version.startswith("1.20") or mc_version.startswith("1.21"):
+            from launcher.core.system_info import SystemInfo
+            java_path = self.config.get("java", "java_path", "")
+            if java_path:
+                v = SystemInfo._verify_java_executable(java_path)
+                if v and "1.8" in v:
+                    raise Exception("Для этой версии Minecraft требуется Java 17 или новее. У вас указана Java 8. Измените настройки.")
+
         # 1. Install Vanilla
         log.info(f"Installing Vanilla {mc_version} to {mc_dir}")
         minecraft_launcher_lib.install.install_minecraft_version(mc_version, mc_dir, callback=cb_dict_vanilla)
 
         # 2. Install Loader
+        target_version_id = mc_version
+
         if loader == "forge":
             if not loader_version or loader_version == "latest":
                 loader_version = minecraft_launcher_lib.forge.find_forge_version(mc_version)
@@ -97,18 +108,35 @@ class LauncherEngine:
                 "setMax": lambda m: None
             }
 
+            # Usually MLL forge installer creates an ID matching the exact forge string or appends -forge-
+            # We must strictly check if the json was generated.
             log.info(f"Installing Forge {loader_version}")
             minecraft_launcher_lib.forge.install_forge_version(loader_version, mc_dir, callback=cb_dict_forge)
-            return loader_version # Forge versions act as the ID in MLL
+
+            target_version_id = loader_version
+
+            # Strict Validation of JSON
+            expected_json = os.path.join(mc_dir, "versions", target_version_id, f"{target_version_id}.json")
+            if not os.path.exists(expected_json):
+                # Sometimes MLL formats Forge IDs differently (e.g. 1.20.1-forge-47.4.5)
+                alt_id = f"{mc_version}-forge-{loader_version.split('-')[-1]}"
+                alt_json = os.path.join(mc_dir, "versions", alt_id, f"{alt_id}.json")
+
+                if os.path.exists(alt_json):
+                    target_version_id = alt_id
+                else:
+                    raise Exception(f"Forge installation failed. The expected version manifest ({target_version_id}.json) was not found in {mc_dir}/versions/. Antivirus might be blocking it.")
 
         elif loader == "fabric":
-             # Similar approach for fabric (requires fabric installer lib which MLL supports)
              log.info("Installing Fabric")
              minecraft_launcher_lib.fabric.install_fabric(mc_version, mc_dir)
-             # Fabric version ID usually follows a pattern
-             return f"fabric-loader-{loader_version}-{mc_version}"
+             target_version_id = f"fabric-loader-{loader_version}-{mc_version}"
 
-        return mc_version # Vanilla fallback
+             expected_json = os.path.join(mc_dir, "versions", target_version_id, f"{target_version_id}.json")
+             if not os.path.exists(expected_json):
+                 raise Exception(f"Fabric installation failed. Manifest ({target_version_id}.json) not found.")
+
+        return target_version_id
 
     def build_command_and_launch(self, instance_id, account, version_id):
         mc_dir = self.im.get_instance_dir(instance_id)

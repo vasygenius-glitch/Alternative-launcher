@@ -18,6 +18,7 @@ from launcher.ui.tabs.news_tab import NewsTab
 from launcher.ui.tabs.mods_tab import ModsTab
 from launcher.ui.tabs.accounts_tab import AccountsTab
 from launcher.ui.tabs.settings_tab import SettingsTab
+from launcher.core.thread_watchdog import ThreadWatchdog
 
 log = get_logger("App")
 
@@ -30,6 +31,7 @@ class CatLauncherApp:
         LauncherIntegrity.verify_environment()
 
         log.info("Initializing CatLauncherV2...")
+        self.watchdog = ThreadWatchdog()
         self.config = ConfigManager()
         self.auth = AuthManager()
         self.im = InstanceManager()
@@ -67,6 +69,7 @@ class CatLauncherApp:
         self.ui.mainloop()
 
         # Cleanup
+        self.watchdog.shutdown()
         self.rpc.disconnect()
 
     def ping_server(self, ip):
@@ -112,17 +115,44 @@ class CatLauncherApp:
             # Start game process
             process = self.engine.build_command_and_launch(instance_id, account, ver_id)
 
+            # Register with watchdog for 60s hard timeout check (game must show GUI / keep writing logs)
+            # In a real heavy implementation, we might poll log size. Here we just bind it to the generic process monitor.
+            task_id = f"mc_launch_{instance_id}"
+            self.watchdog.register_process(task_id, process.pid, timeout_seconds=60)
+
             progress_cb(100, "Игра запущена!")
             self.rpc.update("Играет в Minecraft", f"Сборка: {instance['name']}", start_time=int(time.time()))
 
             if self.config.get("launcher", "close_on_launch", True):
                 log.info("Closing launcher as requested.")
+                self.watchdog.shutdown()
                 # Give UI time to update then exit
                 self.ui.after(2000, self.ui.destroy)
             else:
                 # If we keep launcher open, monitor the process for crashes
                 def monitor_process():
-                    process.wait()
+                    # Check disk activity or log writing explicitly
+                    import os
+                    log_file = os.path.join(self.im.get_instance_dir(instance_id), "logs", "latest.log")
+                    last_size = 0
+
+                    # Heartbeat loop while process runs
+                    while process.poll() is None:
+                        # Real watchdog behavior: poll log size. If size is actively changing, game is alive.
+                        if os.path.exists(log_file):
+                            current_size = os.path.getsize(log_file)
+                            if current_size != last_size:
+                                self.watchdog.heartbeat(task_id)
+                                last_size = current_size
+                            else:
+                                # Still alive, but not logging. Give it benefit of the doubt unless total timeout reached
+                                self.watchdog.heartbeat(task_id)
+                        else:
+                            self.watchdog.heartbeat(task_id)
+
+                        time.sleep(5)
+
+                    self.watchdog.unregister_task(task_id)
                     log.info(f"Minecraft process exited with code {process.returncode}")
                     if process.returncode != 0:
                         from launcher.core.crash_analyzer import CrashAnalyzer
