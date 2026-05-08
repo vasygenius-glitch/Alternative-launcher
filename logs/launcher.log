@@ -28,3 +28,7 @@
 [2026-05-08 00:30:56] [MainThread/INFO] [CatLauncherV2.Config]: Configuration loaded successfully.
 [2026-05-08 00:30:56] [MainThread/DEBUG] [CatLauncherV2.DiscordRPC]: Could not connect to Discord RPC (is Discord running?): Could not find Discord installed and running on this machine.
 [2026-05-08 00:30:56] [MainThread/INFO] [CatLauncherV2.App]: UI Started.
+[2026-05-08 00:48:22] [MainThread/INFO] [CatLauncherV2.App]: Initializing CatLauncherV2...
+[2026-05-08 00:48:22] [MainThread/INFO] [CatLauncherV2.Config]: Configuration loaded successfully.
+[2026-05-08 00:48:22] [MainThread/DEBUG] [CatLauncherV2.DiscordRPC]: Could not connect to Discord RPC (is Discord running?): Could not find Discord installed and running on this machine.
+[2026-05-08 00:48:22] [MainThread/INFO] [CatLauncherV2.App]: UI Started.
