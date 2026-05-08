@@ -71,7 +71,7 @@ class HomeTab(ctk.CTkFrame):
             self.account_lbl.configure(text="Аккаунт: Не выбран")
             self.welcome_label.configure(text="Привет! Выбери аккаунт.")
 
-        inst_id = self.app.config.get("last_instance", "default")
+        inst_id = self.app.config.get("last_instance", default="default")
         inst = self.app.im.get_instance(inst_id)
         if inst:
             self.instance_lbl.configure(text=f"Сборка: {inst['name']} ({inst['mc_version']})")

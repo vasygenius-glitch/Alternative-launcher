@@ -63,7 +63,7 @@ class CatLauncherApp:
             progress_cb(100, "Ошибка: Аккаунт не выбран")
             return
 
-        instance_id = self.config.get("last_instance", "default")
+        instance_id = self.config.get("last_instance", default="default")
         instance = self.im.get_instance(instance_id)
         if not instance:
             progress_cb(100, "Ошибка: Сборка не выбрана")

@@ -56,7 +56,8 @@ class InstancesTab(ctk.CTkFrame):
             w.destroy()
 
         instances = self.app.im.get_instances()
-        active_id = self.app.config.get("last_instance", "default")
+        # use root level key since last_instance is saved at root
+        active_id = self.app.config.get("last_instance", default="default")
 
         if not instances:
             ctk.CTkLabel(self.list_frame, text="Нет сборок").pack(pady=20)
@@ -79,16 +80,16 @@ class InstancesTab(ctk.CTkFrame):
             ctk.CTkButton(f, text="Удалить", width=60, fg_color="#dc3545", hover_color="#c82333", command=lambda i=iid: self.delete_instance(i)).pack(side="right", padx=5, pady=5)
 
     def select_instance(self, iid):
-        self.app.config.set("launcher", "last_instance", iid)
+        self.app.config.set("last_instance", None, iid)
         self.refresh_list()
 
     def delete_instance(self, iid):
         self.app.im.delete_instance(iid)
         # Handle if we deleted the active one
-        if self.app.config.get("last_instance") == iid:
+        if self.app.config.get("last_instance", default="default") == iid:
             rem = self.app.im.get_instances()
             if rem:
-                self.app.config.set("launcher", "last_instance", rem[0]['id'])
+                self.app.config.set("last_instance", None, rem[0]['id'])
             else:
-                self.app.config.set("launcher", "last_instance", "default")
+                self.app.config.set("last_instance", None, "default")
         self.refresh_list()

@@ -76,13 +76,24 @@ class ConfigManager:
         except Exception as e:
             log.error(f"Failed to save config: {e}")
 
-    def get(self, section, key, default=None):
-        return self.data.get(section, {}).get(key, default)
+    def get(self, section, key=None, default=None):
+        if key is None:
+            return self.data.get(section, default)
+
+        # If the requested section exists but is not a dict (e.g., legacy string values)
+        sec_data = self.data.get(section, {})
+        if not isinstance(sec_data, dict):
+            return default
+
+        return sec_data.get(key, default)
 
     def set(self, section, key, value):
-        if section not in self.data:
-            self.data[section] = {}
-        self.data[section][key] = value
+        if key is None:
+            self.data[section] = value
+        else:
+            if section not in self.data or not isinstance(self.data[section], dict):
+                self.data[section] = {}
+            self.data[section][key] = value
         self.save()
 
     def get_all(self):

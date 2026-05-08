@@ -31,7 +31,7 @@ class ModsTab(ctk.CTkFrame):
 
     def on_show(self):
         # Initialize ModManager based on current instance
-        inst_id = self.app.config.get("last_instance", "default")
+        inst_id = self.app.config.get("last_instance", default="default")
         inst = self.app.im.get_instance(inst_id)
         if inst:
             mods_dir = f"{self.app.im.get_instance_dir(inst_id)}/mods"

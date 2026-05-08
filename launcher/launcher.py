@@ -3,9 +3,10 @@ import os
 
 # Adjust path for internal imports if frozen
 if getattr(sys, 'frozen', False):
-    sys.path.append(os.path.dirname(sys.executable))
+    sys.path.insert(0, os.path.dirname(sys.executable))
 else:
-    sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+    # Add project root to path so 'launcher' package can be imported
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from launcher.app import CatLauncherApp
 

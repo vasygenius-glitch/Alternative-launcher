@@ -61,6 +61,9 @@ class InstanceManager:
         return instances
 
     def get_instance(self, instance_id):
+        if not instance_id:
+            return None
+
         json_path = self._get_instance_json_path(instance_id)
         if os.path.exists(json_path):
             try:
