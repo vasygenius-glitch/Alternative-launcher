@@ -121,3 +121,19 @@
 [2026-05-08 16:15:48] [MainThread/DEBUG] [CatLauncherV2.DiscordRPC]: Could not connect to Discord RPC (is Discord running?): Could not find Discord installed and running on this machine.
 [2026-05-08 16:15:49] [MainThread/INFO] [CatLauncherV2.App]: UI Started.
 [2026-05-08 16:15:49] [MainThread/INFO] [CatLauncherV2.App]: PyInstaller splash screen closed.
+[2026-05-08 16:53:03] [MainThread/INFO] [CatLauncherV2.Integrity]: Verifying launcher environment integrity...
+[2026-05-08 16:53:03] [MainThread/INFO] [CatLauncherV2.Integrity]: Environment integrity check passed.
+[2026-05-08 16:53:03] [MainThread/INFO] [CatLauncherV2.App]: Initializing CatLauncherV2...
+[2026-05-08 16:53:03] [MainThread/INFO] [CatLauncherV2.Config]: Configuration loaded successfully.
+[2026-05-08 16:53:03] [MainThread/DEBUG] [CatLauncherV2.DiscordRPC]: Could not connect to Discord RPC (is Discord running?): Could not find Discord installed and running on this machine.
+[2026-05-08 16:53:04] [MainThread/INFO] [CatLauncherV2.App]: UI Started.
+[2026-05-08 16:55:48] [MainThread/ERROR] [CatLauncherV2.Config]: FATAL: Config file corrupted (JSON parsing failed). Auto-recovering default config. Error: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+[2026-05-08 16:55:48] [MainThread/INFO] [CatLauncherV2.Config]: Backed up corrupted config to launcher_data/config.json.corrupted.bak
+[2026-05-08 16:55:48] [MainThread/DEBUG] [CatLauncherV2.Config]: Configuration saved.
+[2026-05-08 17:02:22] [MainThread/INFO] [CatLauncherV2.Integrity]: Verifying launcher environment integrity...
+[2026-05-08 17:02:22] [MainThread/INFO] [CatLauncherV2.Integrity]: Environment integrity check passed.
+[2026-05-08 17:02:22] [MainThread/INFO] [CatLauncherV2.App]: Initializing CatLauncherV2...
+[2026-05-08 17:02:22] [MainThread/INFO] [CatLauncherV2.Config]: Configuration loaded successfully.
+[2026-05-08 17:02:22] [MainThread/DEBUG] [CatLauncherV2.DiscordRPC]: Could not connect to Discord RPC (is Discord running?): Could not find Discord installed and running on this machine.
+[2026-05-08 17:02:24] [MainThread/INFO] [CatLauncherV2.App]: UI Started.
+[2026-05-08 17:02:24] [MainThread/INFO] [CatLauncherV2.App]: PyInstaller splash screen closed.

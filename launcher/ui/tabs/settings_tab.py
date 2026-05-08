@@ -12,7 +12,7 @@ class SettingsTab(ctk.CTkFrame):
 
         from launcher.ui.components.modern_widgets import ModernCard, GlassButton
         # Java Settings
-        self.java_card = ModernCard(self, "Настройки Java", icon="☕")
+        self.java_card = ModernCard(self, "Настройки Java", icon_name="java")
         self.java_card.grid(row=0, column=0, sticky="nsew", padx=(0, 10), pady=(0, 20))
 
         ctk.CTkLabel(self.java_card.content, text="RAM Min (MB)").pack(anchor="w", pady=(5,0))
@@ -46,7 +46,7 @@ class SettingsTab(ctk.CTkFrame):
         self.update_gc_desc(self.gc_var.get())
 
         # Launcher Settings
-        self.launcher_card = ModernCard(self, "Настройки лаунчера", icon="⚙️")
+        self.launcher_card = ModernCard(self, "Настройки лаунчера", icon_name="settings")
         self.launcher_card.grid(row=0, column=1, sticky="nsew", pady=(0, 20))
 
         self.close_var = ctk.BooleanVar(value=self.config.get("launcher", "close_on_launch", True))

@@ -30,7 +30,7 @@ class InstancesTab(ctk.CTkFrame):
 
         # List
         from launcher.ui.components.modern_widgets import ModernCard
-        self.list_card = ModernCard(self, "Мои Сборки", icon="📦")
+        self.list_card = ModernCard(self, "Мои Сборки", icon_name="instances")
         self.list_card.grid(row=0, column=1, sticky="nsew", pady=(0, 20))
 
         self.list_frame = ctk.CTkScrollableFrame(self.list_card.content, fg_color="transparent")

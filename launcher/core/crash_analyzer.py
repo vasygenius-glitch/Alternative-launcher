@@ -135,6 +135,176 @@ class CrashAnalyzer:
             "regex": re.compile(r"A fatal error has been detected by the Java Runtime Environment:"),
             "title": "Фатальный сбой JRE",
             "solution": "Внутренняя ошибка Java (часто из-за драйверов видеокарты Intel/AMD или битой плашки ОЗУ). Обновите драйверы или установите другую сборку Java (Adoptium, Corretto)."
+        },
+        {
+            "regex": re.compile(r"java\.lang\.OutOfMemoryError: Requested array size exceeds VM limit"),
+            "title": "Превышен лимит массива (OutOfMemoryError)",
+            "solution": "Мод или игра попыталась выделить слишком большой объем памяти за одну операцию. Попробуйте выделить больше ОЗУ или удалить тяжелые моды."
+        },
+        {
+            "regex": re.compile(r"java\.lang\.OutOfMemoryError: GC overhead limit exceeded"),
+            "title": "Сборщик мусора перегружен",
+            "solution": "Java тратит более 98% времени на очистку памяти (GC) и менее 2% на работу игры. Увеличьте RAM или используйте ZGC/ShenandoahGC."
+        },
+        {
+            "regex": re.compile(r"java\.lang\.OutOfMemoryError: unable to create new native thread"),
+            "title": "Лимит системных потоков",
+            "solution": "В системе закончились ресурсы для создания новых потоков. Увеличьте файл подкачки Windows, закройте лишние программы или обновите ОС."
+        },
+        {
+            "regex": re.compile(r"java\.lang\.OutOfMemoryError: Direct buffer memory"),
+            "title": "Переполнение Direct Buffer",
+            "solution": "Нехватка 'нативной' памяти (DirectMemory). Добавьте параметр -XX:MaxDirectMemorySize=2G в аргументы JVM."
+        },
+        {
+            "regex": re.compile(r"java\.io\.IOException: No space left on device"),
+            "title": "Нет места на диске",
+            "solution": "У вас закончилось место на диске. Очистите кэш лаунчера (настройки -> очистка) или удалите лишние файлы с диска."
+        },
+        {
+            "regex": re.compile(r"java\.util\.zip\.ZipException: error in opening zip file"),
+            "title": "Поврежденный архив (Мод или Библиотека)",
+            "solution": "Один из скачанных .jar файлов (мод или библиотека) поврежден. Попробуйте удалить моды, установленные последними, или запустите проверку кэша лаунчера."
+        },
+        {
+            "regex": re.compile(r"java\.lang\.UnsatisfiedLinkError: (.*)"),
+            "title": "Отсутствует нативная библиотека (UnsatisfiedLinkError)",
+            "solution": "Игре не хватает файла .dll или .so ({group}). Перекачайте библиотеки (возможно, антивирус удалил критический файл)."
+        },
+        {
+            "regex": re.compile(r"org\.lwjgl\.opengl\.OpenGLException: Cannot create OpenGL context"),
+            "title": "Сбой OpenGL (Драйверы видеокарты)",
+            "solution": "Не удалось инициализировать видеокарту. Обновите видеодрайверы (AMD/NVIDIA/Intel). Если у вас старый ПК, возможно, видеокарта не поддерживает новые версии OpenGL (требуется 3.2+ или 4.4+ для новых версий)."
+        },
+        {
+            "regex": re.compile(r"EXCEPTION_ACCESS_VIOLATION \(0xc0000005\)"),
+            "title": "EXCEPTION_ACCESS_VIOLATION (Сбой драйвера)",
+            "solution": "Фатальная ошибка доступа к памяти. В 90% случаев виноват драйвер видеокарты, особенно Intel HD Graphics или AMD. Обновите или, наоборот, откатите драйвер."
+        },
+        {
+            "regex": re.compile(r"ig9icd64\.dll"),
+            "title": "Конфликт с Intel Graphics",
+            "solution": "Ошибка в модуле драйвера Intel (ig9icd64.dll). Зайдите на сайт Intel и скачайте последнюю версию драйвера для вашей встроенной видеокарты."
+        },
+        {
+            "regex": re.compile(r"atio6axx\.dll"),
+            "title": "Конфликт драйверов AMD",
+            "solution": "Ошибка в драйвере видеокарты AMD (atio6axx.dll). Обновите Radeon Adrenalin Edition до последней стабильной (WHQL) версии."
+        },
+        {
+            "regex": re.compile(r"nvoglv64\.dll"),
+            "title": "Конфликт драйверов NVIDIA",
+            "solution": "Сбой в драйвере NVIDIA OpenGL. Отключите наложение (Overlay) в GeForce Experience, закройте MSI Afterburner/RivaTuner или обновите драйвер."
+        },
+        {
+            "regex": re.compile(r"java\.lang\.IllegalStateException: GLFW error (\d+): (.*)"),
+            "title": "Ошибка создания окна (GLFW)",
+            "solution": "Не удалось создать окно игры. Ошибка {group}. Обновите драйверы видеокарты."
+        },
+        {
+            "regex": re.compile(r"net\.minecraft\.client\.renderer\.StitcherException: Unable to fit: (.*) - size: (\d+)x(\d+)"),
+            "title": "Огромные текстуры (StitcherException)",
+            "solution": "Разрешение ресурспака или текстур мода {group} превышает лимит вашей видеокарты. Используйте текстуры меньшего разрешения."
+        },
+        {
+            "regex": re.compile(r"java\.lang\.IllegalArgumentException: Multiple entries with same key: (.*)"),
+            "title": "Конфликт регистраций (Одинаковый ключ)",
+            "solution": "Два разных мода пытаются зарегистрировать предмет или блок под одним и тем же именем: {group}. Ознакомьтесь с логами для поиска виновника."
+        },
+        {
+            "regex": re.compile(r"net\.minecraftforge\.fml\.common\.LoaderExceptionModCrash: Caught exception from (.*)"),
+            "title": "Фатальная ошибка мода Forge",
+            "solution": "Мод {group} вызвал критическую ошибку во время загрузки. Проверьте, совместима ли его версия с вашей версией Minecraft, и нет ли конфликтов с другими модами."
+        },
+        {
+            "regex": re.compile(r"net\.fabricmc\.loader\.impl\.discovery\.ModResolutionException: Mod discovery failed!"),
+            "title": "Ошибка обнаружения модов Fabric",
+            "solution": "Fabric Loader не смог найти или распознать некоторые моды. Возможно, в папке mods лежат файлы для Forge, или один из модов сильно поврежден."
+        },
+        {
+            "regex": re.compile(r"net\.fabricmc\.loader\.impl\.util\.ExceptionUtil\$WrappedException: java\.io\.IOException: error reading zip file (.*)"),
+            "title": "Битый Fabric Мод",
+            "solution": "Мод {group} поврежден (вероятно, загрузился не до конца). Скачайте и установите его заново."
+        },
+        {
+            "regex": re.compile(r"OptiFine is not supported on this version"),
+            "title": "Несовместимость OptiFine",
+            "solution": "OptiFine не поддерживается в данной сборке. Попробуйте заменить его на связку Sodium/Rubidium + Oculus, либо обновите версию OptiFine."
+        },
+        {
+            "regex": re.compile(r"java\.lang\.AbstractMethodError: (.*)"),
+            "title": "Конфликт API (AbstractMethodError)",
+            "solution": "Мод вызывает метод {group}, который был изменен в новой версии игры или библиотеки. Проверьте актуальность модов. Если вы используете OptiFine, попробуйте его удалить."
+        },
+        {
+            "regex": re.compile(r"org\.spongepowered\.asm\.mixin\.injection\.throwables\.InjectionError: Critical injection failure: (.*)"),
+            "title": "Критическая ошибка инъекции (Mixin)",
+            "solution": "Один из модов (через Mixin: {group}) не смог внедриться в базовый код игры. Убедитесь, что моды совместимы друг с другом. Очень часто это проблема конфликта модов оптимизации."
+        },
+        {
+            "regex": re.compile(r"java\.lang\.RuntimeException: Multiplexing block definition error"),
+            "title": "Ошибка регистрации блоков",
+            "solution": "Сборка превысила внутренний лимит блоков (или мод неправильно регистрирует блок). Требуется мод JustEnoughIDs (для старых версий 1.12.2)."
+        },
+        {
+            "regex": re.compile(r"java\.io\.EOFException: Unexpected end of ZLIB input stream"),
+            "title": "Поврежденный файл сохранения (EOFException)",
+            "solution": "Ваш файл мира, настроек (options.txt) или серверный пакет был поврежден во время записи (например, отключился свет). Удалите options.txt или восстановите мир из бэкапа."
+        },
+        {
+            "regex": re.compile(r"net\.minecraft\.util\.ReportedException: Loading NBT data"),
+            "title": "Поврежденный NBT (Чанки или Игрок)",
+            "solution": "Minecraft не смог прочитать файл данных чанка или игрока. Если это ваш одиночный мир, возможно, он поврежден. Попробуйте утилиты RegionFixer."
+        },
+        {
+            "regex": re.compile(r"java\.lang\.IllegalArgumentException: Cannot get property (.*) as it does not exist in (.*)"),
+            "title": "Сбой свойств блока (BlockState)",
+            "solution": "Мод попытался получить несуществующее свойство {group} для блока {group}. Проблема несовместимости мода с вашей версией Minecraft."
+        },
+        {
+            "regex": re.compile(r"java\.lang\.ArrayIndexOutOfBoundsException: (\d+)"),
+            "title": "Выход за пределы массива",
+            "solution": "Баг внутри одного из модов или старой версии Forge (ошибка доступа к индексу {group}). Поищите обновление для проблемного мода."
+        },
+        {
+            "regex": re.compile(r"java\.lang\.ArithmeticException: (.*)"),
+            "title": "Арифметическая ошибка (ArithmeticException)",
+            "solution": "Мод допустил математическую ошибку (например, деление на ноль: {group}). Это проблема разработчика мода, сообщите ему об ошибке."
+        },
+        {
+            "regex": re.compile(r"java\.util\.ConcurrentModificationException"),
+            "title": "Сбой многопоточности (CME)",
+            "solution": "Два разных процесса (или мода) попытались одновременно изменить один список в игре. Обычно это случайный сбой, просто перезапустите игру."
+        },
+        {
+            "regex": re.compile(r"org\.yaml\.snakeyaml\.parser\.ParserException: (.*)"),
+            "title": "Сломанный YAML конфиг",
+            "solution": "Файл настроек в формате .yaml сломан или содержит опечатки. Ошибка: {group}. Зайдите в папку config и исправьте/удалите проблемный файл."
+        },
+        {
+            "regex": re.compile(r"com\.google\.gson\.JsonSyntaxException: (.*)"),
+            "title": "Сломанный JSON конфиг",
+            "solution": "Файл настроек (например, whitelist.json или конфиг мода) имеет неправильный синтаксис: {group}. Удалите его, чтобы игра сгенерировала новый."
+        },
+        {
+            "regex": re.compile(r"io\.netty\.channel\.AbstractChannel\$AnnotatedConnectException: Connection refused: no further information"),
+            "title": "Сервер не отвечает (Connection refused)",
+            "solution": "Локальный или удаленный сервер выключен, либо его блокирует брандмауэр/антивирус. Проверьте IP и порт."
+        },
+        {
+            "regex": re.compile(r"java\.lang\.IllegalAccessError: (.*)"),
+            "title": "Ошибка доступа к методу (IllegalAccessError)",
+            "solution": "Один мод пытается использовать приватный метод другого ({group}). Возможна несовместимость версий двух разных модов."
+        },
+        {
+            "regex": re.compile(r"java\.lang\.IncompatibleClassChangeError: (.*)"),
+            "title": "Сбой архитектуры классов (ICCE)",
+            "solution": "Структура класса {group} была изменена (например, класс стал интерфейсом). Это фатальная ошибка совместимости мода с ядром игры."
+        },
+        {
+            "regex": re.compile(r"java\.lang\.ClassCastException: (.*) cannot be cast to (.*)"),
+            "title": "Неверный тип объекта (ClassCastException)",
+            "solution": "Мод пытался преобразовать объект типа {group} в несовместимый тип. Баг разработчика мода."
         }
     ]
 

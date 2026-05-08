@@ -55,6 +55,16 @@ class ConfigManager:
             # Merge defaults with loaded data to ensure new keys exist
             self.data = self._merge_dicts(self.defaults.copy(), loaded_data)
             log.info("Configuration loaded successfully.")
+        except json.JSONDecodeError as e:
+            log.error(f"FATAL: Config file corrupted (JSON parsing failed). Auto-recovering default config. Error: {e}")
+            import shutil
+            try:
+                shutil.copy(self.config_path, self.config_path + ".corrupted.bak")
+                log.info(f"Backed up corrupted config to {self.config_path}.corrupted.bak")
+            except Exception:
+                pass
+            self.data = self.defaults.copy()
+            self.save()
         except Exception as e:
             log.error(f"Failed to load config, using defaults. Error: {e}")
             self.data = self.defaults.copy()

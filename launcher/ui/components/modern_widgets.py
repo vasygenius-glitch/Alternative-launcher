@@ -17,13 +17,22 @@ class GlassButton(ctk.CTkButton):
 
 class ModernCard(ctk.CTkFrame):
     """A highly stylized card for content."""
-    def __init__(self, master, title, icon="●", **kwargs):
+    def __init__(self, master, title, icon_name="info", **kwargs):
+        from launcher.utils.paths import get_resource_path
+        from PIL import Image
         super().__init__(master, fg_color=("#ffffff", "#1e1e1e"), corner_radius=15, border_width=1, border_color=("#d0d0d0", "#333333"), **kwargs)
 
         self.header = ctk.CTkFrame(self, fg_color="transparent")
         self.header.pack(fill="x", padx=15, pady=(15, 5))
 
-        self.icon_lbl = ctk.CTkLabel(self.header, text=icon, font=ctk.CTkFont(size=18), text_color="#28a745")
+        try:
+            icon_path = get_resource_path(f"launcher/assets/icons/{icon_name}.png")
+            img = Image.open(icon_path)
+            self.ctk_icon = ctk.CTkImage(light_image=img, dark_image=img, size=(24, 24))
+            self.icon_lbl = ctk.CTkLabel(self.header, text="", image=self.ctk_icon)
+        except Exception:
+            self.icon_lbl = ctk.CTkLabel(self.header, text="●", font=ctk.CTkFont(size=18), text_color="#28a745")
+
         self.icon_lbl.pack(side="left", padx=(0, 10))
 
         self.title_lbl = ctk.CTkLabel(self.header, text=title, font=ctk.CTkFont(size=18, weight="bold"))

@@ -10,7 +10,7 @@ class NewsTab(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
-        self.news_card = ModernCard(self, "Последние новости", icon="📰")
+        self.news_card = ModernCard(self, "Последние новости", icon_name="news")
         self.news_card.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 
         self.scroll_frame = ctk.CTkScrollableFrame(self.news_card.content, fg_color="transparent")

@@ -12,7 +12,7 @@ class AccountsTab(ctk.CTkFrame):
 
         from launcher.ui.components.modern_widgets import ModernCard, GlassButton
         # Add Account Card
-        self.add_card = ModernCard(self, "Добавить аккаунт", icon="➕")
+        self.add_card = ModernCard(self, "Добавить аккаунт", icon_name="accounts")
         self.add_card.grid(row=0, column=0, sticky="nsew", padx=(0, 10), pady=(0, 20))
 
         ctk.CTkLabel(self.add_card.content, text="Оффлайн аккаунт (без лицензии)").pack(pady=5)
@@ -22,7 +22,7 @@ class AccountsTab(ctk.CTkFrame):
         GlassButton(self.add_card.content, text="Добавить", command=self.add_offline).pack(pady=15)
 
         # List Card
-        self.list_card = ModernCard(self, "Список аккаунтов", icon="👥")
+        self.list_card = ModernCard(self, "Список аккаунтов", icon_name="accounts")
         self.list_card.grid(row=0, column=1, sticky="nsew", pady=(0, 20))
 
         self.list_frame = ctk.CTkScrollableFrame(self.list_card.content, fg_color="transparent")

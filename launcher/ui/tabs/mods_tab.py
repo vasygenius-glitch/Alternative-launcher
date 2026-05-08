@@ -25,7 +25,7 @@ class ModsTab(ctk.CTkFrame):
 
         from launcher.ui.components.modern_widgets import ModernCard, GlassButton
         # Results area
-        self.results_card = ModernCard(self, "Результаты поиска (Modrinth)", icon="🧩")
+        self.results_card = ModernCard(self, "Результаты поиска (Modrinth)", icon_name="mods")
         self.results_card.grid(row=1, column=0, sticky="nsew")
 
         self.results_frame = ctk.CTkScrollableFrame(self.results_card.content, fg_color="transparent")
