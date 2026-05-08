@@ -131,24 +131,40 @@ class CatLauncherApp:
             else:
                 # If we keep launcher open, monitor the process for crashes
                 def monitor_process():
-                    # Check disk activity or log writing explicitly
+                    # Strict folder size monitoring
                     import os
-                    log_file = os.path.join(self.im.get_instance_dir(instance_id), "logs", "latest.log")
-                    last_size = 0
+
+                    def get_dir_size(path):
+                        total_size = 0
+                        for dirpath, _, filenames in os.walk(path):
+                            for f in filenames:
+                                fp = os.path.join(dirpath, f)
+                                if not os.path.islink(fp):
+                                    try:
+                                        total_size += os.path.getsize(fp)
+                                    except: pass
+                        return total_size
+
+                    mc_dir = self.im.get_instance_dir(instance_id)
+                    last_size = get_dir_size(mc_dir)
+                    frozen_ticks = 0
 
                     # Heartbeat loop while process runs
                     while process.poll() is None:
-                        # Real watchdog behavior: poll log size. If size is actively changing, game is alive.
-                        if os.path.exists(log_file):
-                            current_size = os.path.getsize(log_file)
-                            if current_size != last_size:
-                                self.watchdog.heartbeat(task_id)
-                                last_size = current_size
-                            else:
-                                # Still alive, but not logging. Give it benefit of the doubt unless total timeout reached
-                                self.watchdog.heartbeat(task_id)
-                        else:
+                        current_size = get_dir_size(mc_dir)
+                        if current_size != last_size:
+                            # Game is doing something on disk (downloading, generating worlds, writing logs)
                             self.watchdog.heartbeat(task_id)
+                            last_size = current_size
+                            frozen_ticks = 0
+                        else:
+                            frozen_ticks += 5
+                            if frozen_ticks < 20:
+                                # Tolerate up to 20 seconds of no disk activity (game might just be sitting in main menu doing nothing)
+                                self.watchdog.heartbeat(task_id)
+                            else:
+                                # Intentional heartbeat skip. Let the Watchdog kill the process if it continues being frozen.
+                                log.warning(f"Process seems deeply frozen (no disk activity for {frozen_ticks}s). Permitting Watchdog execution.")
 
                         time.sleep(5)
 
@@ -174,6 +190,13 @@ class CatLauncherApp:
             log.error(f"Launch failed: {e}", exc_info=True)
             progress_cb(100, f"Ошибка запуска: {e}")
             self.rpc.update("Ошибка запуска", instance['name'])
+
+            # If the error is our strict Java preflight check, present it directly to user via Dialog
+            if "требуется Java 17" in str(e):
+                self.ui.after(0, lambda: self._show_crash_dialog({
+                    "title": "Несовместимость Java",
+                    "solution": str(e)
+                }))
 
     def _show_crash_dialog(self, analysis):
         from launcher.ui.components.dialogs import Dialog

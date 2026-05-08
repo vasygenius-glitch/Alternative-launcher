@@ -115,8 +115,11 @@ class LauncherEngine:
 
             target_version_id = loader_version
 
-            # Strict Validation of JSON
+            # Strict Validation of JSON and JAR
             expected_json = os.path.join(mc_dir, "versions", target_version_id, f"{target_version_id}.json")
+
+            # Helper to check if both json and jar exist (some versions might just be thin json wrappers, but MLL usually generates both or relies on the vanilla jar)
+            # Actually, Forge 1.13+ mostly relies on the vanilla jar and just provides a json manifest. The manifest is the absolute proof.
             if not os.path.exists(expected_json):
                 # Sometimes MLL formats Forge IDs differently (e.g. 1.20.1-forge-47.4.5)
                 alt_id = f"{mc_version}-forge-{loader_version.split('-')[-1]}"

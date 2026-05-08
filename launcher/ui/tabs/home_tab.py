@@ -45,7 +45,7 @@ class HomeTab(ctk.CTkFrame):
         self.status_label = ctk.CTkLabel(self.progress_frame, text="")
         self.status_label.pack(anchor="w")
 
-        self.progress_bar = ctk.CTkProgressBar(self.progress_frame)
+        self.progress_bar = ctk.CTkProgressBar(self.progress_frame, corner_radius=0, progress_color="#FFFFFF", fg_color="#333333")
         self.progress_bar.set(0)
         self.progress_bar.pack(fill="x", pady=(5,0))
         self.progress_bar.pack_forget() # Hide initially
@@ -136,7 +136,7 @@ class HomeTab(ctk.CTkFrame):
         if prog >= 100 or "Ошибка" in text:
             self.play_btn.configure(state="normal", text="ИГРАТЬ")
             if "Ошибка" in text:
-                self.progress_bar.configure(progress_color="#dc3545")
+                self.progress_bar.configure(progress_color="#FF0000")
             else:
                 # Optionally hide progress bar or reset
                 self.after(3000, lambda: self.progress_bar.pack_forget())
