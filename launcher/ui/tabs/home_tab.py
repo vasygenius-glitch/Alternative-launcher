@@ -1,6 +1,20 @@
 import customtkinter as ctk
 import threading
-from launcher.ui.components.widgets import Card, ServerStatusWidget
+
+class ServerStatusWidget(ctk.CTkFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, fg_color="transparent", **kwargs)
+
+        self.status_icon = ctk.CTkLabel(self, text="●", text_color="grey", font=ctk.CTkFont(family="Courier", size=20))
+        self.status_icon.pack(side="left", padx=(0, 5))
+
+        self.status_text = ctk.CTkLabel(self, text="ОЖИДАНИЕ...", font=ctk.CTkFont(family="Courier", size=14, weight="bold"))
+        self.status_text.pack(side="left")
+
+    def update_status(self, online, text):
+        color = "#FFFFFF" if online else "#FF0000"
+        self.status_icon.configure(text_color=color)
+        self.status_text.configure(text=text.upper(), text_color=color)
 
 class HomeTab(ctk.CTkFrame):
     def __init__(self, master, app_logic):

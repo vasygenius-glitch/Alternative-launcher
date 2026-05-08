@@ -49,7 +49,8 @@ def build():
 
     # Verify the output
     exe_name = "CatLauncherV2.exe" if os.name == 'nt' else "CatLauncherV2"
-    exe_path = os.path.join("dist", "CatLauncherV2", exe_name)
+    # When using --onefile, the executable is placed directly in the dist directory
+    exe_path = os.path.join("dist", exe_name)
 
     if not os.path.exists("dist") or not os.path.exists(exe_path):
         print(f"Error: Build failed. Executable not found at {exe_path}")

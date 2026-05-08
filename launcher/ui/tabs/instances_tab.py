@@ -1,5 +1,4 @@
 import customtkinter as ctk
-from launcher.ui.components.widgets import Card
 from launcher.ui.components.dialogs import Dialog
 
 class InstancesTab(ctk.CTkFrame):
@@ -10,7 +9,8 @@ class InstancesTab(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
-        self.create_card = Card(self, "Создать сборку")
+        from launcher.ui.components.modern_widgets import ModernCard, GlassButton
+        self.create_card = ModernCard(self, "Создать сборку", icon_name="java")
         self.create_card.grid(row=0, column=0, sticky="nsew", padx=(0, 10), pady=(0, 20))
 
         # Form
@@ -26,7 +26,7 @@ class InstancesTab(ctk.CTkFrame):
         self.loader_menu = ctk.CTkOptionMenu(self.create_card.content, variable=self.loader_var, values=["vanilla", "forge", "fabric"])
         self.loader_menu.pack(pady=5, fill="x")
 
-        ctk.CTkButton(self.create_card.content, text="Создать", command=self.create_instance).pack(pady=10)
+        GlassButton(self.create_card.content, text="СОЗДАТЬ", command=self.create_instance).pack(pady=10)
 
         # List
         from launcher.ui.components.modern_widgets import ModernCard
@@ -67,7 +67,7 @@ class InstancesTab(ctk.CTkFrame):
 
         for inst in instances:
             iid = inst['id']
-            f = ctk.CTkFrame(self.list_frame, fg_color=("gray85", "gray25"), corner_radius=5)
+            f = ctk.CTkFrame(self.list_frame, fg_color="#000000", border_width=1, border_color="#333333", corner_radius=0)
             f.pack(fill="x", pady=5, padx=5)
 
             lbl_text = f"{inst['name']} ({inst['mc_version']} - {inst['loader']})"

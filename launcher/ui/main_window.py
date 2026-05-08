@@ -13,15 +13,18 @@ class MainWindow(ctk.CTk):
         self.geometry("1000x600")
         self.minsize(900, 500)
 
-        ctk.set_appearance_mode(self.config.get("launcher", "theme", "dark"))
-        ctk.set_default_color_theme(self.config.get("launcher", "color", "blue"))
+        # Hardcode stark appearance for the Vent/Monochrome aesthetic
+        ctk.set_appearance_mode("dark")
+
+        # Override default colors
+        self.configure(fg_color="#050505")
 
         # Setup Layout
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
         # Navigation Bar (Left)
-        self.nav_frame = ctk.CTkFrame(self, corner_radius=0, width=200)
+        self.nav_frame = ctk.CTkFrame(self, corner_radius=0, width=200, fg_color="#000000", border_width=1, border_color="#333333")
         self.nav_frame.grid(row=0, column=0, sticky="nsew")
         self.nav_frame.grid_rowconfigure(5, weight=1)
 
@@ -46,8 +49,9 @@ class MainWindow(ctk.CTk):
         self.main_frame.grid_columnconfigure(0, weight=1)
 
     def _create_nav_button(self, text, row, tab_id):
-        btn = ctk.CTkButton(self.nav_frame, corner_radius=0, height=40, border_spacing=10, text=text,
-                            fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
+        btn = ctk.CTkButton(self.nav_frame, corner_radius=0, height=40, border_spacing=10, text=text.upper(),
+                            fg_color="transparent", text_color="#FFFFFF", hover_color="#1a1a1a",
+                            font=ctk.CTkFont(family="Courier", weight="bold"),
                             anchor="w", command=lambda: self.select_tab(tab_id))
         btn.grid(row=row, column=0, sticky="ew")
         # Store button ref to change color
@@ -65,7 +69,7 @@ class MainWindow(ctk.CTk):
         # Update button colors
         for name, btn in self.nav_buttons.items():
             if name == tab_id:
-                btn.configure(fg_color=("gray75", "gray25"))
+                btn.configure(fg_color="#333333")
             else:
                 btn.configure(fg_color="transparent")
 

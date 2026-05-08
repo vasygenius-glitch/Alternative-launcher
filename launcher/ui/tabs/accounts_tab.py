@@ -1,5 +1,4 @@
 import customtkinter as ctk
-from launcher.ui.components.widgets import Card
 from launcher.ui.components.dialogs import Dialog
 
 class AccountsTab(ctk.CTkFrame):
@@ -55,7 +54,7 @@ class AccountsTab(ctk.CTkFrame):
             return
 
         for acc_id, acc in accounts.items():
-            f = ctk.CTkFrame(self.list_frame, fg_color=("gray85", "gray25"), corner_radius=5)
+            f = ctk.CTkFrame(self.list_frame, fg_color="#000000", border_width=1, border_color="#333333", corner_radius=0)
             f.pack(fill="x", pady=5, padx=5)
 
             name_lbl = ctk.CTkLabel(f, text=f"{acc['username']} ({acc['type']})", font=ctk.CTkFont(weight="bold" if acc_id == active_id else "normal"))

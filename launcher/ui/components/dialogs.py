@@ -17,7 +17,7 @@ class Dialog(ctk.CTkToplevel):
         except:
             pass
 
-        lbl = ctk.CTkLabel(self, text=message, wraplength=360, justify="left", font=ctk.CTkFont(size=14))
+        lbl = ctk.CTkLabel(self, text=message, wraplength=360, justify="left", font=ctk.CTkFont(family="Courier", size=14))
         lbl.pack(pady=20, padx=20, expand=True, fill="both")
 
-        GlassButton(self, text="Понятно", command=self.destroy, width=120).pack(pady=(0, 20))
+        GlassButton(self, text="ПОНЯТНО", command=self.destroy, width=120).pack(pady=(0, 20))

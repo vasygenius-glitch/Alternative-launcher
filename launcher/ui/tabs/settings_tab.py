@@ -1,5 +1,4 @@
 import customtkinter as ctk
-from launcher.ui.components.widgets import Card
 
 class SettingsTab(ctk.CTkFrame):
     def __init__(self, master, app_logic):

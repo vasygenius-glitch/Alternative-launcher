@@ -1,6 +1,5 @@
 import customtkinter as ctk
 import threading
-from launcher.ui.components.widgets import Card
 from launcher.ui.components.dialogs import Dialog
 from launcher.core.mod_manager import ModManager
 
@@ -72,7 +71,7 @@ class ModsTab(ctk.CTkFrame):
             return
 
         for mod in results:
-            f = ctk.CTkFrame(self.results_frame, fg_color=("gray85", "gray25"), corner_radius=5)
+            f = ctk.CTkFrame(self.results_frame, fg_color="#000000", border_width=1, border_color="#333333", corner_radius=0)
             f.pack(fill="x", pady=5, padx=5)
 
             info = ctk.CTkFrame(f, fg_color="transparent")
