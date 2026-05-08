@@ -16,8 +16,9 @@ class HomeTab(ctk.CTkFrame):
         self.left_col.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
         self.left_col.grid_rowconfigure(0, weight=1)
 
+        from launcher.ui.components.modern_widgets import ModernCard, GlassButton
         # Banner/Welcome area
-        self.banner = Card(self.left_col, "Добро пожаловать в Cat Launcher!")
+        self.banner = ModernCard(self.left_col, "Добро пожаловать в Cat Launcher!", icon="🌟")
         self.banner.grid(row=0, column=0, sticky="nsew", pady=(0, 20))
 
         self.welcome_label = ctk.CTkLabel(self.banner.content, text="Готов к игре?", font=ctk.CTkFont(size=24, weight="bold"))
@@ -36,7 +37,7 @@ class HomeTab(ctk.CTkFrame):
         self.progress_bar.pack_forget() # Hide initially
 
         # Play Button Area
-        self.play_btn = ctk.CTkButton(self.left_col, text="ИГРАТЬ", height=60, font=ctk.CTkFont(size=24, weight="bold"),
+        self.play_btn = GlassButton(self.left_col, text="ИГРАТЬ", height=60, font=ctk.CTkFont(size=24, weight="bold"),
                                       fg_color="#28a745", hover_color="#218838", command=self.on_play)
         self.play_btn.grid(row=2, column=0, sticky="ew")
 
@@ -44,13 +45,13 @@ class HomeTab(ctk.CTkFrame):
         self.right_col = ctk.CTkFrame(self, fg_color="transparent")
         self.right_col.grid(row=0, column=1, sticky="nsew")
 
-        self.server_card = Card(self.right_col, "Статус сервера")
+        self.server_card = ModernCard(self.right_col, "Статус сервера", icon="📡")
         self.server_card.pack(fill="x", pady=(0, 20))
 
         self.server_status = ServerStatusWidget(self.server_card.content)
         self.server_status.pack(pady=10)
 
-        self.info_card = Card(self.right_col, "Информация")
+        self.info_card = ModernCard(self.right_col, "Информация", icon="ℹ️")
         self.info_card.pack(fill="x")
         self.account_lbl = ctk.CTkLabel(self.info_card.content, text="Аккаунт: Не выбран")
         self.account_lbl.pack(anchor="w", pady=5)

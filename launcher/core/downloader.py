@@ -33,6 +33,12 @@ class Downloader:
                     if self.calculate_hash(dest_path, hash_algo) == expected_hash:
                         log.debug(f"File already exists and is valid: {dest_path}")
                         return True
+                elif os.path.exists(dest_path):
+                    # Fast check: if size is > 0 and we don't have a strict hash, assume valid to save time
+                    # Usually better for large asset files where hash isn't strictly provided
+                    if not expected_hash and os.path.getsize(dest_path) > 0:
+                        log.debug(f"File exists and assumed valid (no hash provided): {dest_path}")
+                        return True
 
                 log.debug(f"Downloading {url} to {dest_path} (Attempt {attempt+1}/{retries})")
                 response = requests.get(url, stream=True, timeout=15)

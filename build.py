@@ -35,15 +35,27 @@ def build():
         "--hidden-import", "launcher.ui.tabs.instances_tab",
         "--hidden-import", "launcher.ui.tabs.mods_tab",
         "--hidden-import", "launcher.ui.tabs.accounts_tab",
+        "--hidden-import", "launcher.ui.tabs.news_tab",
         "--hidden-import", "launcher.ui.tabs.settings_tab",
         "--hidden-import", "logging.handlers",
         "--add-data", "launcher:launcher",
         "--add-data", "launcher/assets:launcher/assets" if os.name != 'nt' else "launcher/assets;launcher/assets",
+        "--icon", "launcher/assets/icon.ico",
+        "--splash", "launcher/assets/splash.png",
         "launcher/launcher.py"
     ]
 
     subprocess.check_call(cmd)
-    print("Build complete! Check the 'dist' folder.")
+
+    # Verify the output
+    exe_name = "CatLauncherV2.exe" if os.name == 'nt' else "CatLauncherV2"
+    exe_path = os.path.join("dist", "CatLauncherV2", exe_name)
+
+    if not os.path.exists("dist") or not os.path.exists(exe_path):
+        print(f"Error: Build failed. Executable not found at {exe_path}")
+        exit(1)
+
+    print(f"Build complete! Executable successfully created at {exe_path}.")
 
 if __name__ == "__main__":
     build()

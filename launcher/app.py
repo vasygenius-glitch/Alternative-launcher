@@ -13,6 +13,7 @@ from launcher.core.server_status import ping_server
 from launcher.ui.main_window import MainWindow
 from launcher.ui.tabs.home_tab import HomeTab
 from launcher.ui.tabs.instances_tab import InstancesTab
+from launcher.ui.tabs.news_tab import NewsTab
 from launcher.ui.tabs.mods_tab import ModsTab
 from launcher.ui.tabs.accounts_tab import AccountsTab
 from launcher.ui.tabs.settings_tab import SettingsTab
@@ -41,6 +42,7 @@ class CatLauncherApp:
         # Register Tabs
         self.ui.register_tab("home", HomeTab(self.ui.main_frame, self))
         self.ui.register_tab("instances", InstancesTab(self.ui.main_frame, self))
+        self.ui.register_tab("news", NewsTab(self.ui.main_frame, self))
         self.ui.register_tab("mods", ModsTab(self.ui.main_frame, self))
         self.ui.register_tab("accounts", AccountsTab(self.ui.main_frame, self))
         self.ui.register_tab("settings", SettingsTab(self.ui.main_frame, self))
@@ -49,6 +51,15 @@ class CatLauncherApp:
         self.ui.select_tab("home")
 
         log.info("UI Started.")
+
+        # If splash screen from PyInstaller exists, close it
+        try:
+            import pyi_splash
+            pyi_splash.close()
+            log.info("PyInstaller splash screen closed.")
+        except ImportError:
+            pass
+
         self.ui.mainloop()
 
         # Cleanup
@@ -74,6 +85,22 @@ class CatLauncherApp:
             log.info(f"Preparing to launch instance {instance_id}")
             self.rpc.update("Подготовка к запуску...", instance['name'])
 
+            # Step 1: Disk check
+            from launcher.core.system_info import SystemInfo
+            if not SystemInfo.check_disk_space(self.im.get_instance_dir(instance_id), 1024):
+                progress_cb(100, "Ошибка: Недостаточно места на диске (минимум 1 ГБ)")
+                return
+
+            # Step 2: Cache cleanup and verification
+            from launcher.core.cache_manager import CacheManager
+            cm = CacheManager()
+            cm.perform_full_cleanup()
+
+            # Verification is best-effort. If we had an expected_hashes dict, we'd pass it here.
+            progress_cb(10, "Проверка целостности файлов...")
+            cm.verify_integrity(self.im.get_instance_dir(instance_id))
+
+            # Step 3: Install
             ver_id = self.engine.install_and_get_version(instance_id, progress_cb)
 
             progress_cb(95, "Генерация параметров запуска...")

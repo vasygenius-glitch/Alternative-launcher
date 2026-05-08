@@ -14,6 +14,10 @@ class InstanceManager:
     def __init__(self, instances_dir="launcher_data/instances"):
         self.instances_dir = os.path.abspath(instances_dir)
         os.makedirs(self.instances_dir, exist_ok=True)
+        from launcher.utils.paths import get_default_minecraft_dir
+        self.default_mc = get_default_minecraft_dir()
+        if os.path.exists(self.default_mc):
+            log.info(f"Discovered existing Minecraft installation at {self.default_mc}")
 
     def _get_instance_json_path(self, instance_id):
         return os.path.join(self.instances_dir, instance_id, "instance.json")

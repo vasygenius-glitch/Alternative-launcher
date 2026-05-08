@@ -4,3 +4,5 @@ minecraft-launcher-lib
 requests
 pyinstaller
 pypresence
+psutil
+feedparser

@@ -58,6 +58,24 @@ class LauncherEngine:
             "setMax": lambda m: None
         }
 
+        # Smart Discovery optimization
+        default_mc = self.im.default_mc
+        if os.path.exists(default_mc):
+            # Tell MLL to use the default dir as the main source to avoid redownloading common assets
+            options_install = {"resolution": {}}
+            log.info("Using existing .minecraft for asset resolution.")
+            # Note: MLL natively handles caching if the directory already has files
+            # But we can also symlink 'assets' to save disk space if we want.
+            try:
+                asset_link = os.path.join(mc_dir, "assets")
+                default_assets = os.path.join(default_mc, "assets")
+                if not os.path.exists(asset_link) and os.path.exists(default_assets):
+                    # Try symlink, fallback to copy/ignore
+                    if os.name != 'nt':
+                        os.symlink(default_assets, asset_link)
+            except Exception as e:
+                log.debug(f"Could not symlink assets: {e}")
+
         # 1. Install Vanilla
         log.info(f"Installing Vanilla {mc_version} to {mc_dir}")
         minecraft_launcher_lib.install.install_minecraft_version(mc_version, mc_dir, callback=cb_dict_vanilla)
@@ -95,14 +113,15 @@ class LauncherEngine:
     def build_command_and_launch(self, instance_id, account, version_id):
         mc_dir = self.im.get_instance_dir(instance_id)
 
-        # Load RAM settings
-        ram_min = self.config.get("java", "ram_min", 2048)
-        ram_max = self.config.get("java", "ram_max", 4096)
+        # Load Java settings
+        from launcher.core.system_info import SystemInfo
         java_path = self.config.get("java", "java_path", "")
         custom_args_str = self.config.get("java", "custom_args", "")
 
-        jvm_args = self._aikar_flags()
-        jvm_args.extend([f"-Xms{ram_min}M", f"-Xmx{ram_max}M"])
+        # Use optimal dynamic flags calculated by SystemInfo, which inherently considers the RAM
+        jvm_args = SystemInfo.get_jvm_args()
+
+        # Override RAM if user explicitly set custom flags, though otherwise SystemInfo handled it
         if custom_args_str:
             jvm_args.extend(custom_args_str.split())
 

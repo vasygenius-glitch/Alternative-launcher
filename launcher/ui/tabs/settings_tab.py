@@ -10,8 +10,9 @@ class SettingsTab(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
+        from launcher.ui.components.modern_widgets import ModernCard, GlassButton
         # Java Settings
-        self.java_card = Card(self, "Настройки Java")
+        self.java_card = ModernCard(self, "Настройки Java", icon="☕")
         self.java_card.grid(row=0, column=0, sticky="nsew", padx=(0, 10), pady=(0, 20))
 
         ctk.CTkLabel(self.java_card.content, text="RAM Min (MB)").pack(anchor="w", pady=(5,0))
@@ -30,7 +31,7 @@ class SettingsTab(ctk.CTkFrame):
         self.java_path.pack(fill="x", pady=5)
 
         # Launcher Settings
-        self.launcher_card = Card(self, "Настройки лаунчера")
+        self.launcher_card = ModernCard(self, "Настройки лаунчера", icon="⚙️")
         self.launcher_card.grid(row=0, column=1, sticky="nsew", pady=(0, 20))
 
         self.close_var = ctk.BooleanVar(value=self.config.get("launcher", "close_on_launch", True))
@@ -39,7 +40,21 @@ class SettingsTab(ctk.CTkFrame):
         self.rpc_var = ctk.BooleanVar(value=self.config.get("launcher", "discord_rpc", True))
         ctk.CTkSwitch(self.launcher_card.content, text="Discord RPC", variable=self.rpc_var).pack(anchor="w", pady=10)
 
-        ctk.CTkButton(self, text="Сохранить настройки", command=self.save_settings, height=40).grid(row=1, column=0, columnspan=2, pady=10)
+        # Auto-configure button
+        ctk.CTkButton(self.java_card.content, text="Автонастройка ОЗУ", command=self.auto_configure_ram, fg_color="#17a2b8", hover_color="#138496").pack(fill="x", pady=15)
+
+        GlassButton(self, text="Сохранить настройки", command=self.save_settings, height=40).grid(row=1, column=0, columnspan=2, pady=10)
+
+    def auto_configure_ram(self):
+        from launcher.core.system_info import SystemInfo
+        SystemInfo.auto_configure(self.config)
+        self.ram_min.delete(0, 'end')
+        self.ram_min.insert(0, str(self.config.get("java", "ram_min", 2048)))
+        self.ram_max.delete(0, 'end')
+        self.ram_max.insert(0, str(self.config.get("java", "ram_max", 4096)))
+
+        from launcher.ui.components.modern_widgets import ToastNotification
+        ToastNotification(self.master, "ОЗУ автоматически настроено!", type="success")
 
     def save_settings(self):
         try:
@@ -57,4 +72,5 @@ class SettingsTab(ctk.CTkFrame):
         else:
             self.app.rpc.disconnect()
 
-        print("Settings saved.")
+        from launcher.ui.components.modern_widgets import ToastNotification
+        ToastNotification(self.master, "Настройки успешно сохранены", type="success")

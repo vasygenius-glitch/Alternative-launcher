@@ -33,10 +33,11 @@ class MainWindow(ctk.CTk):
 
         self._create_nav_button("Главная", 1, "home")
         self._create_nav_button("Сборки", 2, "instances")
-        self._create_nav_button("Моды", 3, "mods")
-        self._create_nav_button("Аккаунты", 4, "accounts")
+        self._create_nav_button("Новости", 3, "news")
+        self._create_nav_button("Моды", 4, "mods")
+        self._create_nav_button("Аккаунты", 5, "accounts")
 
-        self._create_nav_button("Настройки", 6, "settings")
+        self._create_nav_button("Настройки", 7, "settings")
 
         # Main Content Area (Right)
         self.main_frame = ctk.CTkFrame(self, fg_color="transparent")

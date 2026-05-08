@@ -9,18 +9,19 @@ class AccountsTab(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
+        from launcher.ui.components.modern_widgets import ModernCard, GlassButton
         # Add Account Card
-        self.add_card = Card(self, "Добавить аккаунт")
+        self.add_card = ModernCard(self, "Добавить аккаунт", icon="➕")
         self.add_card.grid(row=0, column=0, sticky="nsew", padx=(0, 10), pady=(0, 20))
 
         ctk.CTkLabel(self.add_card.content, text="Оффлайн аккаунт (без лицензии)").pack(pady=5)
         self.username_entry = ctk.CTkEntry(self.add_card.content, placeholder_text="Никнейм")
         self.username_entry.pack(pady=10, fill="x")
 
-        ctk.CTkButton(self.add_card.content, text="Добавить", command=self.add_offline).pack(pady=5)
+        GlassButton(self.add_card.content, text="Добавить", command=self.add_offline).pack(pady=15)
 
         # List Card
-        self.list_card = Card(self, "Список аккаунтов")
+        self.list_card = ModernCard(self, "Список аккаунтов", icon="👥")
         self.list_card.grid(row=0, column=1, sticky="nsew", pady=(0, 20))
 
         self.list_frame = ctk.CTkScrollableFrame(self.list_card.content, fg_color="transparent")
